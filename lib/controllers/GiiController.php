@@ -15,18 +15,18 @@ class GiiController extends Controller
         return [
             'gii' => [
                 'label' => 'Генератор кода',
-                'url' => ['/gii/admin/gii/index'],
+                'url' => ['/gii/gii/index'],
                 'urlRule' => 'admin/gii',
                 'order' => 500,
                 'items' => [
                     [
                         'label' => 'Модель',
-                        'url' => ['/gii/admin/gii/model'],
+                        'url' => ['/gii/gii/model'],
                         'urlRule' => 'admin/gii/model',
                     ],
                     [
                         'label' => 'CRUD',
-                        'url' => ['/gii/admin/gii/crud'],
+                        'url' => ['/gii/gii/crud'],
                         'urlRule' => 'admin/gii/crud',
                     ]
                 ]

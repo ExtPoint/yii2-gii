@@ -51,7 +51,7 @@ use yii\helpers\Html;
             'attribute' => 'name',
             'format' => 'raw',
             'value' => function($model) {
-                return Html::a($model['name'], ['/gii/admin/gii/model', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
+                return Html::a($model['name'], ['/gii/gii/model', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
             }
         ],
         'metaName',
@@ -59,7 +59,7 @@ use yii\helpers\Html;
         [
             'format' => 'raw',
             'value' => function($model) {
-                return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/admin/gii/crud', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
+                return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/gii/crud', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
             }
         ]
     ],

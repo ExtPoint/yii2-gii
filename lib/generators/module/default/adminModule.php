@@ -15,9 +15,9 @@ echo "<?php\n";
 
 namespace <?= $namespace ?>;
 
-use app\core\admin\base\AppAdminModule;
+use app\core\base\AppModule;
 
-class <?= $className ?> extends AppAdminModule
+class <?= $className ?> extends AppModule
 {
     public function coreMenu()
     {
