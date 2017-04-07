@@ -15,7 +15,7 @@ composer require extpoint/yii2-gii
 
 use extpoint\yii2\components\ModuleLoader;
 
-ModuleLoader::add('extpoint\yii2\gii\GiiModule'); // <--
+ModuleLoader::add('gii', 'extpoint\yii2\gii\GiiModule'); // <--
 
 return [
     'id' => 'my-project',
