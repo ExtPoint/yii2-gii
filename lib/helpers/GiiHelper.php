@@ -76,23 +76,32 @@ class GiiHelper
 
     public static function getModels()
     {
-        $appDir = \Yii::getAlias('@app');
-        $modelFiles = FileHelper::findFiles($appDir, [
-            'only' => [
-                '*/models/*.php',
-                '*/*/models/*.php',
-            ],
-        ]);
-
         if (self::$models === null) {
             self::$models = [];
 
-            foreach ($modelFiles as $path) {
-                $className = $path;
-                $className = str_replace($appDir, '', $className);
-                $className = str_replace('.php', '', $className);
-                $className = 'app' . str_replace(DIRECTORY_SEPARATOR, '\\', $className);
+            $modelsClasses = [];
+            foreach (\Yii::$app->getModules() as $module) {
+                if ($module->id === 'debug') {
+                    continue;
+                }
 
+                $classInfo = new \ReflectionClass($module);
+                $modulePath = dirname($classInfo->getFileName());
+                $moduleNamespace = $classInfo->getNamespaceName();
+
+
+                $modelFiles = FileHelper::findFiles($modulePath, [
+                    'only' => [
+                        'models/*.php',
+                        '*/models/*.php',
+                    ]
+                ]);
+                foreach ($modelFiles as $modelPath) {
+                    $modelsClasses[$modelPath] = $moduleNamespace . str_replace('/', '\\', str_replace($modulePath, '', str_replace('.php', '', $modelPath)));
+                }
+            }
+
+            foreach ($modelsClasses as $path => $className) {
                 /** @type Model $model */
                 $model = new $className();
                 if ($model instanceof Model) {
