@@ -29,6 +29,13 @@ class ModelGenerator extends Generator
      */
     public function generate()
     {
+        if (!is_array($this->meta)) {
+            $this->meta = [];
+        }
+        if (!is_array($this->relations)) {
+            $this->relations = [];
+        }
+
         $moduleDir = \Yii::getAlias('@app') . '/' . str_replace('.', '/', $this->moduleId);
 
         // Create/update meta information
