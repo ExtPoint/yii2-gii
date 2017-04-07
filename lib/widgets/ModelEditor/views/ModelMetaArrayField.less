@@ -1,0 +1,35 @@
+@import "../../../../../core/style/bootstrap-default/variables";
+
+.@{bem-namespace}ModelMetaArrayField {
+    &__th-small {
+        width: 60px;
+        line-height: 12px;
+        font-size: 12px;
+    }
+    &__td-checkbox {
+        margin: -8px !important;
+        padding-top: 0 !important;
+
+        &, > label {
+            width: 100%;
+            height: 46px;
+            padding-top: 10px;
+        }
+
+        > label {
+            text-align: center;
+
+            &:hover {
+                background-color: @panel-info-heading-bg;
+            }
+
+            > input {
+                margin-top: 7px;
+            }
+        }
+    }
+
+    input.form-control, select.form-control {
+        width: 100%;
+    }
+}
