@@ -32,3 +32,5 @@ require('extpoint-yii2/webpack')
     
     .widgets('./vendor/extpoint/yii2-gii/lib/widgets') // <--
 ```
+
+Перезапустите webpack.
