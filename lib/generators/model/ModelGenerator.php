@@ -3,6 +3,7 @@
 namespace extpoint\yii2\gii\generators\model;
 
 use extpoint\yii2\gii\helpers\GiiHelper;
+use yii\db\Schema;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
 use yii\helpers\ArrayHelper;
@@ -15,7 +16,8 @@ class ModelGenerator extends Generator
     public $meta = [];
     public $relations = [];
 
-    public function getName() {
+    public function getName()
+    {
         return 'model';
     }
 
@@ -43,10 +45,10 @@ class ModelGenerator extends Generator
             $moduleDir . '/models/meta/' . ucfirst($this->modelName) . 'Meta.php',
             $this->render('meta.php', [
                 'namespace' => 'app\\' . str_replace('.', '\\', $this->moduleId) . '\\models\\meta',
-                'className' =>  ucfirst($this->modelName) . 'Meta',
+                'className' => ucfirst($this->modelName) . 'Meta',
                 'tableName' => $this->tableName,
                 'meta' => $this->meta,
-                'relations' => array_map(function($relation) {
+                'relations' => array_map(function ($relation) {
                     $relation['model'] = GiiHelper::getModelByClass($relation['relationModelClassName']);
                     return $relation;
                 }, $this->relations),
@@ -58,10 +60,10 @@ class ModelGenerator extends Generator
         $modelFilePath = $moduleDir . '/models/' . ucfirst($this->modelName) . '.php';
         if (!file_exists($modelFilePath)) {
             (new CodeFile(
-                $moduleDir . '/models/' . ucfirst($this->modelName) . '2.php',
+                $moduleDir . '/models/' . ucfirst($this->modelName) . '.php',
                 $this->render('model.php', [
                     'namespace' => 'app\\' . str_replace('.', '\\', $this->moduleId) . '\\models',
-                    'className' =>  ucfirst($this->modelName),
+                    'className' => ucfirst($this->modelName),
                     'tableName' => $this->tableName,
                     'meta' => $this->meta,
                 ])
@@ -114,10 +116,10 @@ class ModelGenerator extends Generator
             if (!empty($relation['viaTable']) && \Yii::$app->db->getTableSchema($relation['viaTable']) === null && !in_array($relation['name'], $oldRelationNames)) {
                 $relationModel = GiiHelper::getModelByClass($relation['relationModelClassName']);
                 $relationKeyType = isset($relationModel['meta'][$relation['viaRelationKey']]) && !empty($relationModel['meta'][$relation['viaRelationKey']]['dbType'])
-                    ? $relationModel['meta'][$relation['viaRelationKey']]['dbType']
+                    ? static::parseDbType($relationModel['meta'][$relation['viaRelationKey']]['dbType'])[0]
                     : 'integer';
                 $selfKeyType = isset($this->meta[$relation['viaSelfKey']]) && !empty($this->meta[$relation['viaSelfKey']]['dbType'])
-                    ? $this->meta[$relation['viaSelfKey']]['dbType']
+                    ? static::parseDbType($this->meta[$relation['viaSelfKey']]['dbType'])[0]
                     : 'integer';
 
                 $tablesToCreate[] = [
@@ -183,6 +185,7 @@ class ModelGenerator extends Generator
      */
     public function getPhpDocType($dbType)
     {
+        $type = static::parseDbType($dbType)[0];
         static $typeMap = [
             'bigint' => 'integer',
             'integer' => 'integer',
@@ -192,10 +195,11 @@ class ModelGenerator extends Generator
             'double' => 'double',
             'binary' => 'resource',
         ];
-        return isset($typeMap[$dbType]) ? $typeMap[$dbType] : 'string';
+        return isset($typeMap[$type]) ? $typeMap[$type] : 'string';
     }
 
-    public function exportMeta($indent = '') {
+    public function exportMeta($indent = '')
+    {
         $meta = [];
         foreach ($this->meta as $metaItem) {
             $meta[$metaItem['name']] = [];
@@ -208,13 +212,139 @@ class ModelGenerator extends Generator
         return GiiHelper::varExport($meta, $indent);
     }
 
-    public function getColumnType($item) {
-        return (!empty($item['dbType']) ? $item['dbType'] : 'string') . (!empty($item['notNull']) ? ' NOT NULL' : '');
+    public function getColumnType($item)
+    {
+        $calls = ['$this'];
+        if (!empty($item['dbType'])) {
+            $map = [
+                'pk' => 'primaryKey',
+                'bigpk' => 'bigPrimaryKey',
+                'char' => 'char',
+                'string' => 'string',
+                'text' => 'text',
+                'smallint' => 'smallInteger',
+                'integer' => 'integer',
+                'bigint' => 'bigInteger',
+                'float' => 'float',
+                'double' => 'double',
+                'decimal' => 'decimal',
+                'datetime' => 'dateTime',
+                'timestamp' => 'timestamp',
+                'time' => 'time',
+                'date' => 'date',
+                'binary' => 'binary',
+                'boolean' => 'boolean',
+                'money' => 'money',
+            ];
+            $params = static::parseDbType($item['dbType']);
+            if (!$params) {
+                return $item['dbType'] . (!empty($item['notNull']) ? ' NOT NULL' : '');
+            }
+            $calls[] = $map[$params[0]] . '(' . (count($params) > 1 ? implode(', ', array_slice($params, 1)) : '') . ')';
+        } else {
+            $calls[] = 'string()';
+        }
+
+        if (!empty($item['notNull'])) {
+            $calls[] = 'notNull()';
+        }
+
+        return implode('->', $calls);
     }
 
-    public function exportRules() {
-        $generator = new \yii\gii\generators\model\Generator();
-        return $generator->generateRules(\Yii::$app->db->getTableSchema($this->tableName));
+    public function exportRules(&$useClasses = [])
+    {
+        $types = [];
+        $lengths = [];
+        foreach ($this->meta as $item) {
+            if ($item['dbType'] === 'pk') {
+                continue;
+            }
+            if (!empty($item['notNull'])) {
+                $types['required'][] = $item['name'];
+            }
+            switch (static::parseDbType($item['dbType'])[0]) {
+                case Schema::TYPE_SMALLINT:
+                case Schema::TYPE_INTEGER:
+                case Schema::TYPE_BIGINT:
+                    $types['integer'][] = $item['name'];
+                    break;
+                case Schema::TYPE_BOOLEAN:
+                    $types['boolean'][] = $item['name'];
+                    break;
+                case Schema::TYPE_FLOAT:
+                case Schema::TYPE_DOUBLE:
+                case Schema::TYPE_DECIMAL:
+                case Schema::TYPE_MONEY:
+                    $types['number'][] = $item['name'];
+                    break;
+                case Schema::TYPE_DATE:
+                case Schema::TYPE_TIME:
+                case Schema::TYPE_DATETIME:
+                case Schema::TYPE_TIMESTAMP:
+                    $types['safe'][] = $item['name'];
+                    break;
+                default: // strings
+                    // TODO size
+                    //if ($column->size > 0) {
+                    //    $lengths[$column->size][] = $item['name'];
+                    //} else {
+                    $types['string'][] = $item['name'];
+                //}
+            }
+        }
+        $rules = [];
+        foreach ($types as $type => $columns) {
+            $rules[] = "[['" . implode("', '", $columns) . "'], '$type']";
+        }
+        foreach ($lengths as $length => $columns) {
+            $rules[] = "[['" . implode("', '", $columns) . "'], 'string', 'max' => $length]";
+        }
+
+        /*$db = $this->getDbConnection();
+
+        // Unique indexes rules
+        try {
+            $uniqueIndexes = $db->getSchema()->findUniqueIndexes($table);
+            foreach ($uniqueIndexes as $uniqueColumns) {
+                // Avoid validating auto incremental columns
+                if (!$this->isColumnAutoIncremental($table, $uniqueColumns)) {
+                    $attributesCount = count($uniqueColumns);
+
+                    if ($attributesCount === 1) {
+                        $rules[] = "[['" . $uniqueColumns[0] . "'], 'unique']";
+                    } elseif ($attributesCount > 1) {
+                        $labels = array_intersect_key($this->generateLabels($table), array_flip($uniqueColumns));
+                        $lastLabel = array_pop($labels);
+                        $columnsList = implode("', '", $uniqueColumns);
+                        $rules[] = "[['$columnsList'], 'unique', 'targetAttribute' => ['$columnsList'], 'message' => 'The combination of " . implode(', ', $labels) . " and $lastLabel has already been taken.']";
+                    }
+                }
+            }
+        } catch (NotSupportedException $e) {
+            // doesn't support unique indexes information...do nothing
+        }*/
+
+        // Exist rules for foreign keys
+        foreach ($this->relations as $relation) {
+            if ($relation['type'] !== 'hasOne') {
+                continue;
+            }
+            $attribute = $relation['name'];
+            $refClassName = GiiHelper::getModelByClass($relation['relationModelClassName'])['name'];
+            $useClasses[] = $relation['relationModelClassName'];
+            $targetAttributes = "'{$relation['selfKey']}' => '{$relation['relationKey']}'";
+            $rules[] = "['$attribute', 'exist', 'skipOnError' => true, 'targetClass' => $refClassName::className(), 'targetAttribute' => [$targetAttributes]]";
+        }
+
+        return $rules;
+    }
+
+    public static function parseDbType($dbType)
+    {
+        return preg_match('/^([^(]+)(\(([^)]+)\))?$/', $dbType, $matches)
+            ? count($matches) > 2 ? [$matches[1], $matches[3]] : [$matches[1]]
+            : null;
     }
 
 }

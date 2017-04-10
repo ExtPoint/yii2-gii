@@ -3,7 +3,6 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\model\ModelGenerator;
-use extpoint\yii2\gii\helpers\GiiHelper;
 use yii\helpers\ArrayHelper;
 use yii\web\View;
 
@@ -15,16 +14,21 @@ use yii\web\View;
 /* @var $meta array */
 /* @var $relations array */
 
+$useClasses = [];
+$rules = $generator->exportRules($useClasses);
+
+if (count($relations) > 0) {
+    $useClasses[] = 'yii\db\ActiveQuery';
+}
+$useClasses = array_merge($useClasses, ArrayHelper::getColumn($relations, 'relationModelClassName'));
+
 echo "<?php\n";
 ?>
 
 namespace <?= $namespace ?>;
 
 use app\core\base\AppModel;
-<?php if (count($relations) > 0) { ?>
-use yii\db\ActiveQuery;
-<?php } ?>
-<?php foreach (array_unique(ArrayHelper::getColumn($relations, 'relationModelClassName')) as $relationClassName) { ?>
+<?php foreach (array_unique($useClasses) as $relationClassName) { ?>
 use <?= $relationClassName ?>;
 <?php } ?>
 
@@ -42,6 +46,13 @@ abstract class <?= $className ?> extends AppModel
     {
         return '<?= $tableName ?>';
     }
+<?php if (!empty($rules)) { ?>
+
+    public function rules()
+    {
+        return [<?= "\n            " . implode(",\n            ", $rules) . ",\n        " ?>];
+    }
+<?php } ?>
 <?php foreach ($relations as $relation) { ?>
 
     /**

@@ -21,8 +21,4 @@ use <?= $namespace ?>\meta\<?= $className ?>Meta;
 
 class <?= $className ?> extends <?= $className ?>Meta
 {
-    public function rules()
-    {
-        return [<?= "\n            " . implode(",\n            ", $generator->exportRules()) . ",\n        " ?>];
-    }
 }

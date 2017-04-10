@@ -8,6 +8,9 @@
         "yiisoft/yii2": "*",
         "extpoint/yii2-core": "*"
     },
+    "require-dev": {
+        "yiisoft/yii2-gii": "*"
+    },
     "autoload": {
         "psr-4": {"extpoint\\yii2\\gii\\": "lib"}
     }
