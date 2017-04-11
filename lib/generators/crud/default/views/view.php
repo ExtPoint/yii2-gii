@@ -42,7 +42,7 @@ use <?= $modelClassName ?>;
 
 <?php if ($createActionIndex || $createActionUpdate || $withDelete) { ?>
 <div class="indent">
-<?php if (count($requestFields) > 0) { ?>
+<?php if (count($requestFields) === 0) { ?>
     <?= "<?=" ?> CrudControls::widget() ?>
 <?php } else { ?>
     <?= "<?=" ?> CrudControls::widget([

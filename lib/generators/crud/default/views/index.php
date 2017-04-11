@@ -48,7 +48,7 @@ use yii\web\View;
 
 <?php if ($createActionCreate) { ?>
 <div class="indent">
-<?php if (count($requestFields) > 0) { ?>
+<?php if (count($requestFields) === 0) { ?>
     <?= "<?=" ?> CrudControls::widget() ?>
 <?php } else { ?>
     <?= "<?=" ?> CrudControls::widget([

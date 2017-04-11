@@ -37,7 +37,7 @@ use <?= $relationClassName ?>;
  * @property <?= "{$generator->getPhpDocType($metaItem['dbType'])} \${$metaItem['name']}\n" ?>
 <?php } ?>
 <?php foreach ($relations as $relation) { ?>
- * @property-read <?= $relation['model']['name'] ?> <?= "\${$relation['name']}\n" ?>
+ * @property-read <?= $relation['model']['name'] ?><?= $relation['type'] !== 'hasOne' ? '[]' : '' ?> <?= "\${$relation['name']}\n" ?>
 <?php } ?>
  */
 abstract class <?= $className ?> extends AppModel

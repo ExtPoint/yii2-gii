@@ -40,13 +40,13 @@ namespace <?= $namespace ?>;
 use Yii;
 use app\core\base\AppController;
 use <?= $modelClassName ?>;
-<?php if ($createActionCreate && $withSearch) { ?>
+<?php if ($createActionIndex && $withSearch) { ?>
 use <?= $searchModelClassName ?>;
 <?php } ?>
-<?php if ($createActionCreate && !$withSearch) { ?>
+<?php if ($createActionIndex && !$withSearch) { ?>
 use yii\data\ActiveDataProvider;
 <?php } ?>
-<?php if ($createActionIndex && $withDelete) { ?>
+<?php if (($createActionIndex && $withDelete) || $createActionView) { ?>
 use yii\web\ForbiddenHttpException;
 <?php } ?>
 
@@ -136,9 +136,9 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionView) { ?>
 
-    public function actionView(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>, $id)
+    public function actionView(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($id);
+        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
         if (!$model->canView(Yii::$app->user->model)) {
             throw new ForbiddenHttpException();
         }
@@ -174,9 +174,9 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionUpdate) { ?>
 
-    public function actionUpdate(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>, $id)
+    public function actionUpdate(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($id);
+        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
 
         if ($model->load(Yii::$app->request->post()) && $model->canUpdate(Yii::$app->user->model) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Запись обновлена');
@@ -196,9 +196,9 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionIndex && $withDelete) { ?>
 
-    public function actionDelete(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>, $id)
+    public function actionDelete(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($id);
+        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
         if ($model->canDelete(Yii::$app->user->model)) {
             $model->deleteOrPanic();
         } else {

@@ -78,7 +78,7 @@ class CrudGenerator extends Generator
         \Yii::$app->session->addFlash('success', 'Создан контроллер ' . ucfirst($this->name) . 'Controller');
 
         $searchModelPath = $moduleDir . '/forms/' . $model['name'] . 'Search.php';
-        if (!file_exists($searchModelPath)) {
+        if ($this->createActionIndex && $this->withSearch && !file_exists($searchModelPath)) {
             (new CodeFile(
                 $moduleDir . '/forms/' . $model['name'] . 'Search.php',
                 $this->render('search.php', [
