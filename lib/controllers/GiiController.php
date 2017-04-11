@@ -18,6 +18,8 @@ class GiiController extends Controller
                 'url' => ['/gii/gii/index'],
                 'urlRule' => 'admin/gii',
                 'order' => 500,
+                'roles' => 'admin',
+                'visible' => YII_DEBUG,
                 'items' => [
                     [
                         'label' => 'Модель',
@@ -36,15 +38,6 @@ class GiiController extends Controller
 
     public function actionIndex()
     {
-        if (\Yii::$app->request->post('create-module') === '') {
-            $moduleId = \Yii::$app->request->post('moduleId');
-            if ($moduleId) {
-                (new ModuleGenerator([
-                    'moduleId' => $moduleId,
-                ]))->generate();
-            }
-        }
-
         $modelDataProvider = new ArrayDataProvider([
             'allModels' => GiiHelper::getModels(),
         ]);

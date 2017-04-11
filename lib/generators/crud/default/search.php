@@ -48,7 +48,7 @@ class <?= $className ?> extends <?= $parentModelName ?>
     {
         return [
             'sort' => [
-                'attributes' => 'id',
+                'attributes' => ['id'],
                 'defaultOrder' => [
                     'id' => SORT_DESC,
                 ],

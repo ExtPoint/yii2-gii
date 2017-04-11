@@ -18,6 +18,7 @@ use yii\web\View;
 /* @var $createActionUpdate bool */
 /* @var $createActionView bool */
 /* @var $meta array */
+/* @var $requestFields string[] */
 
 echo "<?php\n";
 ?>
@@ -26,53 +27,31 @@ namespace app\views;
 
 use yii\web\View;
 <?php if ($createActionIndex || $createActionView || $withDelete) { ?>
-use app\core\widgets\MenuLink;
+use app\core\widgets\CrudControls;
 <?php } ?>
 use app\core\widgets\AppActiveForm;
 use <?= $modelClassName ?>;
 
 /* @var $this View */
 /* @var $model <?= $modelName ?> */
+<?php foreach ($requestFields as $requestField) { ?>
+/* @var $<?= $requestField ?> integer */
+<?php } ?>
 
 ?>
 
 <?php if ($createActionIndex || $createActionView || $withDelete) { ?>
 <div class="indent">
-<?php if ($createActionIndex) { ?>
-    <?= "<?=" ?> MenuLink::widget([
-        'icon' => 'glyphicon glyphicon-arrow-left',
-        'label' => 'К списку',
-        'url' => ['index'],
-        'options' => [
-            'class' => 'btn btn-default',
-        ]
-    ]) ?>
+<?php if (count($requestFields) > 0) { ?>
+    <?= "<?=" ?> CrudControls::widget() ?>
+<?php } else { ?>
+    <?= "<?=" ?> CrudControls::widget([
+        'actionParams' => [
+<?php foreach ($requestFields as $requestField) { ?>
+            '<?= $requestField ?>' => $<?= $requestField ?>,
 <?php } ?>
-<?php if ($createActionView) { ?>
-    <?= "<?=" ?> MenuLink::widget([
-        'label' => 'Просмотр',
-        'url' => ['view', 'id' => $model->id],
-        'visible' => !$model->isNewRecord,
-        'options' => [
-            'class' => 'btn btn-default',
-        ]
+        ],
     ]) ?>
-<?php } ?>
-<?php if ($withDelete) { ?>
-
-    <div class="pull-right">
-        <?= "<?=" ?> MenuLink::widget([
-            'icon' => 'glyphicon glyphicon-remove',
-            'label' => 'Удалить',
-            'url' => ['delete', 'id' => $model->id],
-            'visible' => !$model->isNewRecord,
-            'options' => [
-                'class' => 'btn btn-danger',
-                'data-confirm' => 'Удалить запись?',
-                'data-method' => 'post',
-            ]
-        ]) ?>
-    </div>
 <?php } ?>
 </div>
 <?php } ?>

@@ -18,6 +18,7 @@ use yii\web\View;
 /* @var $createActionUpdate bool */
 /* @var $createActionView bool */
 /* @var $meta array */
+/* @var $requestFields string[] */
 
 echo "<?php\n";
 ?>
@@ -30,7 +31,7 @@ use <?= $searchModelClassName ?>;
 use app\core\widgets\AppGridView;
 use yii\data\ActiveDataProvider;
 <?php if ($createActionCreate) { ?>
-use app\core\widgets\MenuLink;
+use app\core\widgets\CrudControls;
 <?php } ?>
 use yii\web\View;
 
@@ -39,26 +40,43 @@ use yii\web\View;
 <?php if ($withSearch) { ?>
 /* @var $searchModel <?= $searchModelName ?> */
 <?php } ?>
+<?php foreach ($requestFields as $requestField) { ?>
+/* @var $<?= $requestField ?> integer */
+<?php } ?>
 
 ?>
 
 <?php if ($createActionCreate) { ?>
-    <div class="indent">
-        <?= "<?=" ?> MenuLink::widget([
-            'icon' => 'glyphicon glyphicon-plus',
-            'label' => 'Добавить',
-            'url' => ['create'],
-            'options' => [
-                'class' => 'btn btn-success',
-            ]
-        ]) ?>
-    </div>
+<div class="indent">
+<?php if (count($requestFields) > 0) { ?>
+    <?= "<?=" ?> CrudControls::widget() ?>
+<?php } else { ?>
+    <?= "<?=" ?> CrudControls::widget([
+        'actionParams' => [
+<?php foreach ($requestFields as $requestField) { ?>
+            '<?= $requestField ?>' => $<?= $requestField ?>,
+<?php } ?>
+        ],
+    ]) ?>
+<?php } ?>
+</div>
 <?php } ?>
 
 <?= "<?=" ?> AppGridView::widget([
     'dataProvider' => $dataProvider,
+<?php if ($createActionIndex && $withSearch) { ?>
     'filterModel' => $searchModel,
+<?php } ?>
 <?php if (count($generator->getGridViewActions()) > 0) { ?>
-    'actions' => ['<?= implode("', '", $generator->getGridViewActions()) ?>'],
+    'actions' => [
+        '<?= implode("',\n        '", $generator->getGridViewActions()) ?>'
+    ],
+<?php } ?>
+<?php if (count($requestFields) > 0) { ?>
+    'actionParams' => [
+    <?php foreach ($requestFields as $requestField) { ?>
+        '<?= $requestField ?>' => $<?= $requestField ?>,
+    <?php } ?>
+    ],
 <?php } ?>
 ]); ?>

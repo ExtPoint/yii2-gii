@@ -225,7 +225,11 @@ class GiiHelper
 
     public static function varExport($var, $indent = '')
     {
-        switch (gettype($var)) {
+        $type = gettype($var);
+        if (in_array($var, ['true', 'false'])) {
+            $type = 'boolean';
+        }
+        switch ($type) {
             case 'string':
                 return "'" . addcslashes($var, "\\\$\'\r\n\t\v\f") . "'";
             case 'array':

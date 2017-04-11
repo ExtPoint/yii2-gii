@@ -245,7 +245,7 @@ class ModelGenerator extends Generator
             $calls[] = 'string()';
         }
 
-        if (!empty($item['notNull'])) {
+        if (!empty($item['notNull']) && (empty($item['dbType']) || $item['dbType'] !== 'pk')) {
             $calls[] = 'notNull()';
         }
 

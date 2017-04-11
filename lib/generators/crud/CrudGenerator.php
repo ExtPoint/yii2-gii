@@ -2,6 +2,7 @@
 
 namespace extpoint\yii2\gii\generators\crud;
 
+use extpoint\yii2\base\Model;
 use extpoint\yii2\gii\helpers\GiiHelper;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
@@ -21,6 +22,7 @@ class CrudGenerator extends Generator
     public $title;
     public $url;
     public $roles;
+    public $requestFields;
 
     public function getName() {
         return 'crud';
@@ -39,6 +41,8 @@ class CrudGenerator extends Generator
         $model = GiiHelper::getModelByClass($this->modelClassName);
         $moduleDir = \Yii::getAlias('@app') . '/' . str_replace('.', '/', $this->moduleId);
         $moduleNamespace = 'app\\' . str_replace('.', '\\', $this->moduleId);
+        $requestFields = preg_split('/[^\s-_]+/', $this->requestFields, -1, PREG_SPLIT_NO_EMPTY);
+        $roles = preg_split('/[^\w\d@*-_]+/', $this->roles, -1, PREG_SPLIT_NO_EMPTY);
 
         $controllerPath = $moduleDir . '/controllers/' . ucfirst($this->name) . 'Controller.php';
         if (file_exists($controllerPath)) {
@@ -46,12 +50,15 @@ class CrudGenerator extends Generator
             return;
         }
 
+        /** @var Model $modelClass */
+        $modelClass = $this->modelClassName;
         (new CodeFile(
             $controllerPath,
             $this->render('controller.php', [
                 'namespace' => $moduleNamespace . '\\controllers',
                 'className' => ucfirst($this->name) . 'Controller',
                 'routePrefix' => '/' . str_replace('.', '/', $this->moduleId) . '/' . Inflector::camel2id($this->name),
+                'pkParam' => $modelClass::getRequestParamName(),
                 'modelName' => $model['name'],
                 'modelClassName' => $this->modelClassName,
                 'searchModelName' => $model['name'] . 'Search',
@@ -64,7 +71,8 @@ class CrudGenerator extends Generator
                 'createActionView' => $this->createActionView,
                 'title' => $this->title,
                 'url' => $this->url,
-                'roles' => preg_split('/[^\w\d@*]+/', $this->roles, -1, PREG_SPLIT_NO_EMPTY),
+                'requestFields' => $requestFields,
+                'roles' => $roles,
             ])
         ))->save();
         \Yii::$app->session->addFlash('success', 'Создан контроллер ' . ucfirst($this->name) . 'Controller');
@@ -109,6 +117,7 @@ class CrudGenerator extends Generator
                         'createActionUpdate' => $this->createActionUpdate,
                         'createActionView' => $this->createActionView,
                         'meta' => $model['meta'],
+                        'requestFields' => $requestFields,
                     ])
                 ))->save();
             }
