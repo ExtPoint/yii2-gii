@@ -3,7 +3,8 @@
 namespace extpoint\yii2\gii\widgets\CrudFrom;
 
 use extpoint\yii2\base\Widget;
-use extpoint\yii2\gii\helpers\GiiHelper;
+use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\ModuleClass;
 
 class CrudFrom extends Widget
 {
@@ -14,8 +15,21 @@ class CrudFrom extends Widget
         echo $this->renderReact([
             'initialValues' => !empty($this->initialValues) ? $this->initialValues : null,
             'csrfToken' => \Yii::$app->request->csrfToken,
-            'modules' => GiiHelper::getModules(),
-            'models' => GiiHelper::getModels(),
+            'modules' => array_map(function($moduleClass) {
+                /** @type ModuleClass $moduleClass */
+                return [
+                    'id' => $moduleClass->id,
+                    'className' => $moduleClass->className,
+                ];
+            }, ModuleClass::findAll()),
+            'models' => array_map(function($modelClass) {
+                /** @type ModelClass $modelClass */
+                return [
+                    'className' => $modelClass->className,
+                    'name' => $modelClass->name,
+                    'moduleId' => $modelClass->moduleClass->id,
+                ];
+            }, ModelClass::findAll()),
         ]);
     }
 

@@ -5,9 +5,13 @@ namespace extpoint\yii2\gii\controllers;
 use extpoint\yii2\gii\generators\model\ModelGenerator;
 use extpoint\yii2\gii\generators\crud\CrudGenerator;
 use extpoint\yii2\gii\generators\module\ModuleGenerator;
-use extpoint\yii2\gii\helpers\GiiHelper;
 use extpoint\yii2\base\Controller;
+use extpoint\yii2\gii\models\MetaItem;
+use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\ModuleClass;
+use extpoint\yii2\gii\models\Relation;
 use yii\data\ArrayDataProvider;
+use yii\helpers\ArrayHelper;
 
 class GiiController extends Controller
 {
@@ -39,7 +43,7 @@ class GiiController extends Controller
     public function actionIndex()
     {
         $modelDataProvider = new ArrayDataProvider([
-            'allModels' => GiiHelper::getModels(),
+            'allModels' => ModelClass::findAll(),
         ]);
 
         return $this->render('index', [
@@ -54,7 +58,7 @@ class GiiController extends Controller
             $modelName = \Yii::$app->request->post('modelName');
 
             // Check to create module
-            if ($moduleId && !GiiHelper::isModuleExists($moduleId)) {
+            if ($moduleId && !ModuleClass::findOne($moduleId)) {
                 (new ModuleGenerator([
                     'moduleId' => $moduleId,
                 ]))->generate();
@@ -62,12 +66,30 @@ class GiiController extends Controller
 
             // Update model
             if ($moduleId && $modelName) {
-                (new ModelGenerator([
-                    'moduleId' => $moduleId,
-                    'modelName' => $modelName,
+                $modelClass = new ModelClass([
+                    'className' => ModelClass::idToClassName($moduleId, $modelName),
                     'tableName' => \Yii::$app->request->post('tableName'),
-                    'meta' => \Yii::$app->request->post('meta'),
-                    'relations' => \Yii::$app->request->post('relations'),
+                ]);
+                $modelClass->getMetaClass()->setMeta(
+                    array_map(function($item) use ($modelClass) {
+                        return new MetaItem(array_merge($item, [
+                            'metaClass' => $modelClass->getMetaClass(),
+                        ]));
+                    }, \Yii::$app->request->post('meta', []))
+                );
+                $modelClass->getMetaClass()->setRelations(
+                    array_map(function($item) {
+                        $className = ArrayHelper::remove($item, 'relationModelClassName');
+                        return new Relation(array_merge($item, [
+                            'relationClass' => ModelClass::findOne($className),
+                        ]));
+                    }, \Yii::$app->request->post('relations', []))
+                );
+
+                (new ModelGenerator([
+                    'oldModelClass' => ModelClass::findOne($modelClass->className),
+                    'modelClass' => $modelClass,
+                    'migrateMode' => \Yii::$app->request->post('migrateMode'),
                 ]))->generate();
 
                 return $this->redirect(['model', 'moduleId' => $moduleId, 'modelName' => $modelName]);
@@ -84,7 +106,7 @@ class GiiController extends Controller
 
     public function actionCrud($moduleId = null, $modelName = null)
     {
-        $modelClassName = GiiHelper::getModel($moduleId, $modelName)['className'];
+        $modelClassName = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName))->className;
         $initialValues = [
             'modelClassName' => $modelClassName,
             'moduleId' => $moduleId,
@@ -100,12 +122,12 @@ class GiiController extends Controller
             $modelClassName = \Yii::$app->request->post('modelClassName');
             $moduleId = \Yii::$app->request->post('moduleId');
             $name = \Yii::$app->request->post('name');
-            $modelName = GiiHelper::getModelByClass($modelClassName)['name'];
+            $modelName = ModelClass::findOne($modelClassName)->name;
             $initialValues = \Yii::$app->request->post();
             unset($initialValues['_csrf']);
 
             // Check to create module
-            if ($moduleId && !GiiHelper::isModuleExists($moduleId)) {
+            if ($moduleId && !ModuleClass::findOne($moduleId)) {
                 (new ModuleGenerator([
                     'moduleId' => $moduleId,
                 ]))->generate();

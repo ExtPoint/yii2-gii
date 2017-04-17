@@ -1,6 +1,10 @@
 @state-info-bg: #d9edf7;
 
 .@{bem-namespace}ModelMetaArrayField {
+    input.form-control, select.form-control {
+        width: 100%;
+    }
+
     &__th-small {
         width: 60px;
         line-height: 12px;
@@ -28,8 +32,13 @@
             }
         }
     }
+    &__th-app-types, &__td-app-types {
+        .form-group {
+            margin: 0 15px 0 0;
+        }
 
-    input.form-control, select.form-control {
-        width: 100%;
+        input.form-control, select.form-control {
+            width: auto;
+        }
     }
 }

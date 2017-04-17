@@ -2,6 +2,7 @@
 
 namespace extpoint\yii2\views;
 
+use extpoint\yii2\gii\models\ModelClass;
 use yii\data\ArrayDataProvider;
 use yii\grid\GridView;
 use yii\helpers\Html;
@@ -11,24 +12,34 @@ use yii\helpers\Html;
 
 ?>
 
-<h3>Models</h3>
+<h3>
+    Models
+    <?= Html::a(
+        '<span class="glyphicon glyphicon-plus"></span> Add',
+        ['model'],
+        ['class' => 'btn btn-sm btn-success',]
+    ) ?>
+</h3>
+
 <?= GridView::widget([
     'dataProvider' => $modelDataProvider,
     'columns' => [
-        'module',
+        'moduleClass.id',
         [
             'attribute' => 'name',
             'format' => 'raw',
             'value' => function($model) {
-                return Html::a($model['name'], ['/gii/gii/model', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
+                /** @type ModelClass $model */
+                return Html::a($model->name, ['/gii/gii/model', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name]);
             }
         ],
-        'metaName',
+        'metaClass.name',
         'tableName',
         [
             'format' => 'raw',
             'value' => function($model) {
-                return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/gii/crud', 'moduleId' => $model['module'], 'modelName' => $model['name']]);
+                /** @type ModelClass $model */
+                return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/gii/crud', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name]);
             }
         ]
     ],

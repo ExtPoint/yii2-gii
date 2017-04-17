@@ -3,29 +3,35 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\model\ModelGenerator;
-use yii\helpers\ArrayHelper;
+use extpoint\yii2\gii\models\ModelClass;
 use yii\web\View;
 
 /* @var $this View */
 /* @var $generator ModelGenerator */
-/* @var $tableName string */
-/* @var $namespace string */
-/* @var $className string */
-/* @var $meta array */
-/* @var $relations array */
+/* @var $modelClass ModelClass */
 
 $useClasses = [];
 $rules = $generator->exportRules($useClasses);
 
-if (count($relations) > 0) {
+if (count($modelClass->metaClass->relations) > 0) {
     $useClasses[] = 'yii\db\ActiveQuery';
 }
-$useClasses = array_merge($useClasses, ArrayHelper::getColumn($relations, 'relationModelClassName'));
+foreach ($modelClass->metaClass->relations as $relation) {
+    $useClasses[] = $relation->relationClass->className;
+}
+
+$properties = [];
+foreach ($modelClass->metaClass->meta as $metaItem) {
+    if ($metaItem->appType === 'relation' && !$metaItem->getDbType()) {
+        $relation = $metaItem->metaClass->getRelation($metaItem->relationName);
+        $properties[$metaItem->name] = $relation && !$relation->isHasOne ? ' = []' : '';
+    }
+}
 
 echo "<?php\n";
 ?>
 
-namespace <?= $namespace ?>;
+namespace <?= $modelClass->metaClass->namespace ?>;
 
 use app\core\base\AppModel;
 <?php foreach (array_unique($useClasses) as $relationClassName) { ?>
@@ -33,18 +39,26 @@ use <?= $relationClassName ?>;
 <?php } ?>
 
 /**
-<?php foreach ($meta as $metaItem) { ?>
- * @property <?= "{$generator->getPhpDocType($metaItem['dbType'])} \${$metaItem['name']}\n" ?>
-<?php } ?>
-<?php foreach ($relations as $relation) { ?>
- * @property-read <?= $relation['model']['name'] ?><?= $relation['type'] !== 'hasOne' ? '[]' : '' ?> <?= "\${$relation['name']}\n" ?>
+<?php foreach ($modelClass->metaClass->meta as $metaItem) {
+    if ($metaItem->getDbType()) { ?>
+ * @property <?= "{$metaItem->phpDocType} \${$metaItem->name}\n" ?>
+<?php }
+} ?>
+<?php foreach ($modelClass->metaClass->relations as $relation) { ?>
+ * @property-read <?= $relation->relationClass->name ?><?= $relation->isHasOne ? '[]' : '' ?> <?= "\${$relation->name}\n" ?>
 <?php } ?>
  */
-abstract class <?= $className ?> extends AppModel
+abstract class <?= $modelClass->metaClass->name ?> extends AppModel
 {
+<?php if (count($properties) > 0) { ?>
+<?php foreach ($properties as $key => $value) { ?>
+    public $<?= $key ?><?= $value ?>;
+<?php } ?>
+
+<?php } ?>
     public static function tableName()
     {
-        return '<?= $tableName ?>';
+        return '<?= $modelClass->tableName ?>';
     }
 <?php if (!empty($rules)) { ?>
 
@@ -53,24 +67,24 @@ abstract class <?= $className ?> extends AppModel
         return [<?= "\n            " . implode(",\n            ", $rules) . ",\n        " ?>];
     }
 <?php } ?>
-<?php foreach ($relations as $relation) { ?>
+<?php foreach ($modelClass->metaClass->relations as $relation) { ?>
 
     /**
      * @return ActiveQuery
      */
-    public function get<?= ucfirst($relation['name']) ?>()
+    public function get<?= ucfirst($relation->name) ?>()
     {
-<?php if ($relation['type'] !== 'manyMany') { ?>
-        return $this-><?= $relation['type'] === 'hasOne' ? 'hasOne' : 'hasMany' ?>(<?= $relation['model']['name'] ?>::className(), ['<?= $relation['relationKey'] ?>' => '<?= $relation['selfKey'] ?>']);
-<?php } else { ?>
-        return $this->hasMany(<?= $relation['model']['name'] ?>::className(), ['<?= $relation['relationKey'] ?>' => '<?= $relation['viaRelationKey'] ?>'])
-            ->viaTable('<?= $relation['viaTable'] ?>', ['<?= $relation['viaSelfKey'] ?>' => '<?= $relation['selfKey'] ?>']);
+<?php if ($relation->isHasOne || $relation->isHasMany) { ?>
+        return $this-><?= $relation->type ?>(<?= $relation->relationClass->name ?>::className(), ['<?= $relation->relationKey ?>' => '<?= $relation->selfKey ?>']);
+<?php } elseif ($relation->isManyMany) { ?>
+        return $this->hasMany(<?= $relation->relationClass->name ?>::className(), ['<?= $relation->relationKey ?>' => '<?= $relation->viaRelationKey ?>'])
+            ->viaTable('<?= $relation->viaTable ?>', ['<?= $relation->viaSelfKey ?>' => '<?= $relation->selfKey ?>']);
 <?php } ?>
     }
 <?php } ?>
 
     public static function meta()
     {
-        return <?= $generator->exportMeta('        ') ?>;
+        return <?= $modelClass->metaClass->renderMeta('        ') ?>;
     }
 }

@@ -3,22 +3,20 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\model\ModelGenerator;
+use extpoint\yii2\gii\models\ModelClass;
 use yii\web\View;
 
 /* @var $this View */
 /* @var $generator ModelGenerator */
-/* @var $tableName string */
-/* @var $namespace string */
-/* @var $className string */
-/* @var $meta array */
+/* @var $modelClass ModelClass */
 
 echo "<?php\n";
 ?>
 
-namespace <?= $namespace ?>;
+namespace <?= $modelClass->namespace ?>;
 
-use <?= $namespace ?>\meta\<?= $className ?>Meta;
+use <?= $modelClass->metaClass->className ?>;
 
-class <?= $className ?> extends <?= $className ?>Meta
+class <?= $modelClass->name ?> extends <?= $modelClass->metaClass->name ?>Meta
 {
 }

@@ -3,64 +3,61 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\model\ModelGenerator;
+use extpoint\yii2\gii\models\MigrationClass;
+use extpoint\yii2\gii\models\MigrationMethods;
 use yii\web\View;
 
 /* @var $this View */
 /* @var $generator ModelGenerator */
-/* @var $tableName string */
-/* @var $className string */
-/* @var $meta array */
-/* @var $addColumn array */
-/* @var $alterColumn array */
-/* @var $alterColumnDown array */
-/* @var $dropColumn array */
-/* @var $tablesToCreate array */
-/* @var $foreignKeys array */
+/* @var $migrationClass MigrationClass */
+/* @var $migrationMethods MigrationMethods */
 
 echo "<?php\n";
 ?>
 
+namespace <?= $migrationClass->namespace ?>;
+
 use extpoint\yii2\base\Migration;
 
-class <?= $className ?> extends Migration
+class <?= $migrationClass->name ?> extends Migration
 {
     public function up() {
-<?php foreach ($addColumn as $item) { ?>
-        $this->addColumn('<?= $tableName ?>', '<?= $item['name'] ?>', <?= $generator->getColumnType($item) ?>);
+<?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
+        $this->addColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
-<?php foreach ($alterColumn as $item) { ?>
-        $this->alterColumn('<?= $tableName ?>', '<?= $item['name'] ?>', <?= $generator->getColumnType($item) ?>);
+<?php foreach ($migrationMethods->alterColumn as $metaItem) { ?>
+        $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
-<?php foreach ($dropColumn as $item) { ?>
-        $this->dropColumn('<?= $tableName ?>', '<?= $item['name'] ?>');
+<?php foreach ($migrationMethods->dropColumn as $metaItem) { ?>
+        $this->dropColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>');
 <?php } ?>
-<?php foreach ($tablesToCreate as $item) { ?>
-        $this->createTable('<?= $item['table'] ?>', [
-<?php foreach ($item['columns'] as $key => $type) { ?>
-            '<?= $key ?>' => <?= $type ?>,
+<?php if (!empty($migrationMethods->createTable)) { ?>
+        $this->createTable('<?= $migrationMethods->modelClass->tableName ?>', [
+<?php foreach ($migrationMethods->createTable as $metaItem) { ?>
+            '<?= $metaItem->name ?>' => <?= $metaItem->renderMigrationColumnType() ?>,
 <?php } ?>
         ]);
 <?php } ?>
-<?php foreach ($foreignKeys as $item) { ?>
-        $this->createForeignKey('<?= $item['table'] ?>', '<?= $item['key'] ?>', '<?= $item['refTable'] ?>', '<?= $item['refKey'] ?>');
+<?php foreach ($migrationMethods->foreignKeys as $relation) { ?>
+        $this->createForeignKey('<?= $migrationMethods->modelClass->tableName ?>', '<?= $relation->selfKey ?>', '<?= $relation->relationClass->tableName ?>', '<?= $relation->relationKey ?>');
 <?php } ?>
     }
 
     public function down() {
-<?php foreach ($foreignKeys as $item) { ?>
-        $this->deleteForeignKey('<?= $item['table'] ?>', '<?= $item['key'] ?>', '<?= $item['refTable'] ?>', '<?= $item['refKey'] ?>');
+<?php foreach ($migrationMethods->foreignKeys as $relation) { ?>
+        $this->deleteForeignKey('<?= $migrationMethods->modelClass->tableName ?>', '<?= $relation->selfKey ?>', '<?= $relation->relationClass->tableName ?>', '<?= $relation->relationKey ?>');
 <?php } ?>
-<?php foreach ($tablesToCreate as $item) { ?>
-        $this->dropTable('<?= $item['table'] ?>');
+<?php if (!empty($migrationMethods->createTable)) { ?>
+        $this->dropTable('<?= $migrationMethods->modelClass->tableName ?>');
 <?php } ?>
-<?php foreach ($dropColumn as $item) { ?>
-        $this->addColumn('<?= $tableName ?>', '<?= $item['name'] ?>', <?= $generator->getColumnType($item) ?>);
+<?php foreach ($migrationMethods->dropColumn as $metaItem) { ?>
+        $this->addColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
-<?php foreach ($alterColumnDown as $item) { ?>
-        $this->alterColumn('<?= $tableName ?>', '<?= $item['name'] ?>', <?= $generator->getColumnType($item) ?>);
+<?php foreach ($migrationMethods->alterColumnDown as $metaItem) { ?>
+        $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
-<?php foreach ($addColumn as $item) { ?>
-        $this->dropColumn('<?= $tableName ?>', '<?= $item['name'] ?>');
+<?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
+        $this->dropColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>');
 <?php } ?>
     }
 }

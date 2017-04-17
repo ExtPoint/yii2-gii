@@ -2,8 +2,12 @@
 
 namespace extpoint\yii2\gii\widgets\ModelEditor;
 
+use extpoint\yii2\base\Type;
 use extpoint\yii2\base\Widget;
 use extpoint\yii2\gii\helpers\GiiHelper;
+use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\ModuleClass;
+use yii\helpers\ArrayHelper;
 
 class ModelEditor extends Widget
 {
@@ -14,12 +18,18 @@ class ModelEditor extends Widget
         echo $this->renderReact([
             'initialValues' => !empty($this->initialValues) ? $this->initialValues : null,
             'csrfToken' => \Yii::$app->request->csrfToken,
-            'modules' => GiiHelper::getModules(),
-            'models' => GiiHelper::getModels(),
+            'modules' => ModuleClass::findAll(),
+            'models' => ModelClass::findAll(),
             'tableNames' => GiiHelper::getTableNames(),
             'dbTypes' => GiiHelper::getDbTypes(),
-            'fieldWidgets' => GiiHelper::getFieldWidgets(),
-            'formatters' => GiiHelper::getFormatters(),
+            'appTypes' => array_map(function($appType) {
+                /** @type Type $appType */
+                return [
+                    'name' => $appType->name,
+                    'title' => ucfirst($appType->name),
+                    'fieldProps' => $appType->getGiiFieldProps()
+                ];
+            }, \Yii::$app->types->getTypes()),
         ]);
     }
 

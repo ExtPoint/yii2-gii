@@ -3,7 +3,7 @@
 namespace extpoint\yii2\gii\generators\crud;
 
 use extpoint\yii2\base\Model;
-use extpoint\yii2\gii\helpers\GiiHelper;
+use extpoint\yii2\gii\models\ModelClass;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
 use yii\helpers\Inflector;
@@ -38,7 +38,7 @@ class CrudGenerator extends Generator
      */
     public function generate()
     {
-        $model = GiiHelper::getModelByClass($this->modelClassName);
+        $model = ModelClass::findOne($this->modelClassName);
         $moduleDir = \Yii::getAlias('@app') . '/' . str_replace('.', '/', $this->moduleId);
         $moduleNamespace = 'app\\' . str_replace('.', '\\', $this->moduleId);
         $requestFields = preg_split('/[^\s-_]+/', $this->requestFields, -1, PREG_SPLIT_NO_EMPTY);
