@@ -82,6 +82,9 @@ class MigrationMethods extends Object
             $this->processAddColumn();
             $this->processUpdateColumn();
             $this->processDropColumn();
+        }
+
+        if ($this->migrateMode === self::MIGRATE_MODE_UPDATE || $this->migrateMode === self::MIGRATE_MODE_CREATE) {
             $this->processJunction();
             $this->processForeignKeys();
         }
@@ -108,7 +111,7 @@ class MigrationMethods extends Object
             $parts[] = 'create';
             $parts[] = $this->modelClass->tableName;
         } else {
-            $parts[] = $this->modelClass->tableName;
+            $parts[] = $this->modelClass->name;
 
             $metaItems = [];
             if (!empty($this->addColumn)) {
@@ -131,7 +134,7 @@ class MigrationMethods extends Object
             if (!empty($this->junctionTables)) {
                 $parts[] = 'junction';
                 foreach ($this->junctionTables as $junction) {
-                    $parts[] = $junction['table'];
+                    $parts[] = $junction['name'];
                 }
             }
 
@@ -198,21 +201,24 @@ class MigrationMethods extends Object
     {
         $oldRelationNames = ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name');
         foreach ($this->modelClass->metaClass->relations as $relation) {
-            if (!$relation->viaTable || in_array($relation->name, $oldRelationNames)) {
+            if (!$relation->viaTable) {
                 continue;
             }
 
-            $this->junctionTables[] = [
-                'table' => $relation->viaTable,
-                'columns' => [
-                    $relation->viaRelationKey => $relation->viaRelationMetaItem
-                        ? $relation->viaRelationMetaItem->renderMigrationColumnType()
-                        : 'integer NOT NULL',
-                    $relation->viaSelfKey => $relation->viaSelfMetaItem
-                        ? $relation->viaSelfMetaItem->renderMigrationColumnType()
-                        : 'integer NOT NULL',
-                ],
-            ];
+            if ($this->migrateMode === self::MIGRATE_MODE_CREATE || !in_array($relation->name, $oldRelationNames)) {
+                $this->junctionTables[] = [
+                    'name' => $relation->name,
+                    'table' => $relation->viaTable,
+                    'columns' => [
+                        $relation->viaRelationKey => $relation->viaRelationMetaItem
+                            ? $relation->viaRelationMetaItem->renderMigrationColumnType()
+                            : '$this->integer()->notNull()',
+                        $relation->viaSelfKey => $relation->viaSelfMetaItem
+                            ? $relation->viaSelfMetaItem->renderMigrationColumnType()
+                            : '$this->integer()->notNull()',
+                    ],
+                ];
+            }
         }
     }
 
@@ -220,11 +226,13 @@ class MigrationMethods extends Object
     {
         $oldRelationNames = ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name');
         foreach ($this->modelClass->metaClass->relations as $relation) {
-            if ($relation->selfKey === 'id' || !$relation->isHasOne || in_array($relation->name, $oldRelationNames)) {
+            if ($relation->selfKey === 'id' || !$relation->isHasOne) {
                 continue;
             }
 
-            $this->foreignKeys[] = $relation;
+            if ($this->migrateMode === self::MIGRATE_MODE_CREATE || !in_array($relation->name, $oldRelationNames)) {
+                $this->foreignKeys[] = $relation;
+            }
         }
     }
 

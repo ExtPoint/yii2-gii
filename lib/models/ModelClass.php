@@ -7,6 +7,7 @@ use extpoint\yii2\base\Model;
 /**
  * @property-read MetaClass $metaClass
  * @property-read ModuleClass $moduleClass
+ * @property-read string $requestParamName
  */
 class ModelClass extends BaseClass
 {
@@ -86,6 +87,12 @@ class ModelClass extends BaseClass
         return new ModuleClass([
             'className' => self::idToClassName($id),
         ]);
+    }
+
+    public function getRequestParamName() {
+        /** @var Model $className */
+        $className = $this->className;
+        return $className::getRequestParamName();
     }
 
     public function fields() {

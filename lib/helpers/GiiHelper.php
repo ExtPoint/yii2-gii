@@ -2,6 +2,7 @@
 
 namespace extpoint\yii2\gii\helpers;
 
+use extpoint\yii2\gii\models\ValueExpression;
 use yii\db\Schema;
 
 class GiiHelper
@@ -22,6 +23,9 @@ class GiiHelper
         $type = gettype($var);
         if (in_array($var, ['true', 'false'])) {
             $type = 'boolean';
+        }
+        if ($var instanceof ValueExpression) {
+            return (string) $var;
         }
         switch ($type) {
             case 'string':

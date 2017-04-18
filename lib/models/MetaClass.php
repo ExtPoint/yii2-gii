@@ -2,14 +2,17 @@
 
 namespace extpoint\yii2\gii\models;
 
+use extpoint\yii2\base\ArrayType;
 use extpoint\yii2\base\Model;
 use extpoint\yii2\gii\helpers\GiiHelper;
 use yii\db\ActiveQuery;
+use yii\helpers\ArrayHelper;
 
 /**
  * Class MetaClass
  * @property MetaItem[] $meta
  * @property Relation[] $relations
+ * @property array $properties
  */
 class MetaClass extends ModelClass
 {
@@ -54,11 +57,11 @@ class MetaClass extends ModelClass
                     }
                 } else {
                     $this->_meta = array_map(function ($attribute) use ($model) {
-                        return [
+                        return new MetaItem([
                             'name' => $attribute,
                             'label' => $model->getAttributeLabel($attribute),
                             'hint' => $model->getAttributeHint($attribute),
-                        ];
+                        ]);
                     }, $model->attributes());
                 }
             }
@@ -185,6 +188,61 @@ class MetaClass extends ModelClass
             }
         }
         return GiiHelper::varExport($meta, $indent);
+    }
+
+    public function renderBehaviors($indent = '', &$useClasses = []) {
+        $behaviors = [];
+        foreach ($this->meta as $metaItem) {
+            $appType = \Yii::$app->types->getType($metaItem->appType);
+            if (!$appType) {
+                continue;
+            }
+
+            foreach ($appType->getGiiBehaviors($metaItem) as $behaviour) {
+                if (is_string($behaviour)) {
+                    $behaviour = ['class' => $behaviour];
+                }
+
+                $className = ArrayHelper::remove($behaviour, 'class');
+                if (!isset($behaviors[$className])) {
+                    $behaviors[$className] = [];
+                }
+                $behaviors[$className] = ArrayHelper::merge($behaviors[$className], $behaviour);
+            }
+        }
+
+        $items = [];
+        foreach ($behaviors as $className => $params) {
+            $nameParts = explode('\\', $className);
+            $name = array_slice($nameParts, -1)[0];
+            $useClasses[] = $className;
+
+            if (empty($params)) {
+                $items[] = "$name::className(),";
+            } else {
+                $params = array_merge([
+                    'class' => new ValueExpression("$name::className()"),
+                ], $params);
+                $items[] = GiiHelper::varExport($params, $indent) . ",\n";
+            }
+        }
+        return implode("\n" . $indent, $items);
+    }
+
+    public function getProperties() {
+        $properties = [];
+        foreach ($this->meta as $metaItem) {
+            $appType = \Yii::$app->types->getType($metaItem->appType);
+            if (!$appType) {
+                continue;
+            }
+
+            if ($appType instanceof ArrayType && !$appType->getGiiDbType($metaItem)) {
+                $relation = $metaItem->metaClass->getRelation($metaItem->relationName);
+                $properties[$metaItem->name] = $relation && !$relation->isHasOne ? '[]' : '';
+            }
+        }
+        return $properties;
     }
 
     public function fields()

@@ -12,20 +12,13 @@ use yii\web\View;
 
 $useClasses = [];
 $rules = $generator->exportRules($useClasses);
+$behaviors = $modelClass->metaClass->renderBehaviors('            ', $useClasses);
 
 if (count($modelClass->metaClass->relations) > 0) {
     $useClasses[] = 'yii\db\ActiveQuery';
 }
 foreach ($modelClass->metaClass->relations as $relation) {
     $useClasses[] = $relation->relationClass->className;
-}
-
-$properties = [];
-foreach ($modelClass->metaClass->meta as $metaItem) {
-    if ($metaItem->appType === 'relation' && !$metaItem->getDbType()) {
-        $relation = $metaItem->metaClass->getRelation($metaItem->relationName);
-        $properties[$metaItem->name] = $relation && !$relation->isHasOne ? ' = []' : '';
-    }
 }
 
 echo "<?php\n";
@@ -45,14 +38,14 @@ use <?= $relationClassName ?>;
 <?php }
 } ?>
 <?php foreach ($modelClass->metaClass->relations as $relation) { ?>
- * @property-read <?= $relation->relationClass->name ?><?= $relation->isHasOne ? '[]' : '' ?> <?= "\${$relation->name}\n" ?>
+ * @property-read <?= $relation->relationClass->name ?><?= !$relation->isHasOne ? '[]' : '' ?> <?= "\${$relation->name}\n" ?>
 <?php } ?>
  */
 abstract class <?= $modelClass->metaClass->name ?> extends AppModel
 {
-<?php if (count($properties) > 0) { ?>
-<?php foreach ($properties as $key => $value) { ?>
-    public $<?= $key ?><?= $value ?>;
+<?php if (count($modelClass->metaClass->properties) > 0) { ?>
+<?php foreach ($modelClass->metaClass->properties as $key => $value) { ?>
+    public $<?= $key ?><?= $value !== null ? ' = ' . $value : '' ?>;
 <?php } ?>
 
 <?php } ?>
@@ -65,6 +58,15 @@ abstract class <?= $modelClass->metaClass->name ?> extends AppModel
     public function rules()
     {
         return [<?= "\n            " . implode(",\n            ", $rules) . ",\n        " ?>];
+    }
+<?php } ?>
+<?php if (!empty($behaviors)) { ?>
+
+    public function behaviors()
+    {
+        return [
+            <?= $behaviors ?>
+        ];
     }
 <?php } ?>
 <?php foreach ($modelClass->metaClass->relations as $relation) { ?>

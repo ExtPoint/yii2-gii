@@ -118,10 +118,14 @@ class ModelGenerator extends Generator
                     $types['safe'][] = $metaItem->name;
                     break;
                 default: // strings
-                    if (count($metaItem->getParsedDbType()) > 1) {
-                        $lengths[(int) $metaItem->getParsedDbType()[1]][] = $metaItem->name;
+                    if ($metaItem->getDbType()) {
+                        if (count($metaItem->getParsedDbType()) > 1) {
+                            $lengths[(int) $metaItem->getParsedDbType()[1]][] = $metaItem->name;
+                        } else {
+                            $types['string'][] = $metaItem->name;
+                        }
                     } else {
-                        $types['string'][] = $metaItem->name;
+                        $types['safe'][] = $metaItem->name;
                     }
             }
         }

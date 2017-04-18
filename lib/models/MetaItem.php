@@ -173,7 +173,7 @@ class MetaItem extends Object implements Arrayable
 
         if (isset($map[$parts[0]])) {
             $arguments = count($parts) > 1 ? implode(', ', array_slice($parts, 1)) : '';
-            return '$this->' . $map[$parts[0]] . '(' . $arguments . ')' . ($this->required ? 'notNull()' : '');
+            return '$this->' . $map[$parts[0]] . '(' . $arguments . ')' . ($this->required ? '->notNull()' : '');
         } else {
             return "'$dbType'";
         }

@@ -3,22 +3,22 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\crud\CrudGenerator;
+use extpoint\yii2\gii\models\ControllerClass;
+use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\SearchModelClass;
 use yii\web\View;
 
 /* @var $this View */
 /* @var $generator CrudGenerator */
-/* @var $modelName string */
-/* @var $modelClassName string */
-/* @var $searchModelName string */
-/* @var $searchModelClassName string */
+/* @var $modelClass ModelClass */
+/* @var $controllerClass ControllerClass */
+/* @var $searchModelClass SearchModelClass */
 /* @var $createActionIndex bool */
 /* @var $withSearch bool */
 /* @var $withDelete bool */
 /* @var $createActionCreate bool */
 /* @var $createActionUpdate bool */
 /* @var $createActionView bool */
-/* @var $meta array */
-/* @var $requestFields string[] */
 
 echo "<?php\n";
 ?>
@@ -26,7 +26,7 @@ echo "<?php\n";
 namespace app\views;
 
 <?php if ($withSearch) { ?>
-use <?= $searchModelClassName ?>;
+use <?= $searchModelClass->className ?>;
 <?php } ?>
 use app\core\widgets\AppGridView;
 use yii\data\ActiveDataProvider;
@@ -38,23 +38,23 @@ use yii\web\View;
 /* @var $this View */
 /* @var $dataProvider ActiveDataProvider */
 <?php if ($withSearch) { ?>
-/* @var $searchModel <?= $searchModelName ?> */
+/* @var $searchModel <?= $searchModelClass->name ?> */
 <?php } ?>
-<?php foreach ($requestFields as $requestField) { ?>
-/* @var $<?= $requestField ?> integer */
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+/* @var $<?= $key ?> integer */
 <?php } ?>
 
 ?>
 
 <?php if ($createActionCreate) { ?>
 <div class="indent">
-<?php if (count($requestFields) === 0) { ?>
+<?php if (count($controllerClass->requestFieldsArray) === 0) { ?>
     <?= "<?=" ?> CrudControls::widget() ?>
 <?php } else { ?>
     <?= "<?=" ?> CrudControls::widget([
         'actionParams' => [
-<?php foreach ($requestFields as $requestField) { ?>
-            '<?= $requestField ?>' => $<?= $requestField ?>,
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+            '<?= $key ?>' => $<?= $key ?>,
 <?php } ?>
         ],
     ]) ?>
@@ -72,11 +72,11 @@ use yii\web\View;
         '<?= implode("',\n        '", $generator->getGridViewActions()) ?>'
     ],
 <?php } ?>
-<?php if (count($requestFields) > 0) { ?>
+<?php if (count($controllerClass->requestFieldsArray) > 0) { ?>
     'actionParams' => [
-    <?php foreach ($requestFields as $requestField) { ?>
-        '<?= $requestField ?>' => $<?= $requestField ?>,
-    <?php } ?>
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+        '<?= $key ?>' => $<?= $key ?>,
+<?php } ?>
     ],
 <?php } ?>
 ]); ?>

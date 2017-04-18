@@ -33,8 +33,15 @@ class <?= $migrationClass->name ?> extends Migration
 <?php } ?>
 <?php if (!empty($migrationMethods->createTable)) { ?>
         $this->createTable('<?= $migrationMethods->modelClass->tableName ?>', [
-<?php foreach ($migrationMethods->createTable as $metaItem) { ?>
-            '<?= $metaItem->name ?>' => <?= $metaItem->renderMigrationColumnType() ?>,
+    <?php foreach ($migrationMethods->createTable as $metaItem) { ?>
+        '<?= $metaItem->name ?>' => <?= $metaItem->renderMigrationColumnType() ?>,
+    <?php } ?>
+    ]);
+<?php } ?>
+<?php foreach ($migrationMethods->junctionTables as $junction) { ?>
+        $this->createTable('<?= $junction['table'] ?>', [
+<?php foreach ($junction['columns'] as $columnName => $columnType) { ?>
+            '<?= $columnName ?>' => <?= $columnType ?>,
 <?php } ?>
         ]);
 <?php } ?>
@@ -46,6 +53,9 @@ class <?= $migrationClass->name ?> extends Migration
     public function down() {
 <?php foreach ($migrationMethods->foreignKeys as $relation) { ?>
         $this->deleteForeignKey('<?= $migrationMethods->modelClass->tableName ?>', '<?= $relation->selfKey ?>', '<?= $relation->relationClass->tableName ?>', '<?= $relation->relationKey ?>');
+<?php } ?>
+<?php foreach ($migrationMethods->junctionTables as $junction) { ?>
+        $this->dropTable('<?= $junction['table'] ?>');
 <?php } ?>
 <?php if (!empty($migrationMethods->createTable)) { ?>
         $this->dropTable('<?= $migrationMethods->modelClass->tableName ?>');

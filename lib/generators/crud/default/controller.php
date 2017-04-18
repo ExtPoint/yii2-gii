@@ -3,45 +3,33 @@
 namespace app\views;
 
 use extpoint\yii2\gii\generators\crud\CrudGenerator;
+use extpoint\yii2\gii\models\ControllerClass;
+use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\SearchModelClass;
 use yii\web\View;
 
 /* @var $this View */
 /* @var $generator CrudGenerator */
-/* @var $namespace string */
-/* @var $className string */
-/* @var $routePrefix string */
-/* @var $pkParam string */
-/* @var $modelName string */
-/* @var $modelClassName string */
-/* @var $searchModelClassName string */
-/* @var $searchModelName string */
+/* @var $modelClass ModelClass */
+/* @var $controllerClass ControllerClass */
+/* @var $searchModelClass SearchModelClass */
 /* @var $createActionIndex bool */
 /* @var $withSearch bool */
 /* @var $withDelete bool */
 /* @var $createActionCreate bool */
 /* @var $createActionUpdate bool */
 /* @var $createActionView bool */
-/* @var $title string */
-/* @var $url string */
-/* @var $roles string[] */
-/* @var $requestFields string[] */
-
-$requestParamsArray = [];
-foreach ($requestFields as $requestField) {
-    $requestParamsArray[] = "'$requestField' => \$requestField";
-}
-$redirectParamsString = count($requestParamsArray) > 0 ? ', ' . implode(', ', $requestParamsArray) : '';
 
 echo "<?php\n";
 ?>
 
-namespace <?= $namespace ?>;
+namespace <?= $controllerClass->namespace ?>;
 
 use Yii;
 use app\core\base\AppController;
-use <?= $modelClassName ?>;
+use <?= $modelClass->className ?>;
 <?php if ($createActionIndex && $withSearch) { ?>
-use <?= $searchModelClassName ?>;
+use <?= $searchModelClass->className ?>;
 <?php } ?>
 <?php if ($createActionIndex && !$withSearch) { ?>
 use yii\data\ActiveDataProvider;
@@ -50,51 +38,48 @@ use yii\data\ActiveDataProvider;
 use yii\web\ForbiddenHttpException;
 <?php } ?>
 
-class <?= $className ?> extends AppController
+class <?= $controllerClass->name ?> extends AppController
 {
     public static function coreMenuItems()
     {
         return [
             [
-                'label' => '<?= $title ?>',
+                'label' => '<?= $controllerClass->title ?>',
 <?php if ($createActionIndex) { ?>
-                'url' => ['<?= $routePrefix ?>/index'],
-                'urlRule' => '<?= $url ?>',
+                'url' => ['<?= $controllerClass->routePrefix ?>/index'],
+                'urlRule' => '<?= $controllerClass->url ?>',
 <?php } ?>
-<?php if (count($roles) === 1) { ?>
-                'roles' => '<?= $roles[0] ?>',
-<?php } ?>
-<?php if (count($roles) > 1) { ?>
-                'roles' => ['<?= implode('\', \'', $roles) ?>'],
+<?php if (count($controllerClass->rolesArray) > 0) { ?>
+                'roles' => <?= $controllerClass->renderRoles() ?>,
 <?php } ?>
 <?php if ($createActionCreate || $createActionUpdate || $createActionUpdate || $createActionView) { ?>
                 'items' => [
 <?php if ($createActionCreate) { ?>
                     [
                         'label' => 'Добавление',
-                        'url' => ['<?= $routePrefix ?>/create'],
-                        'urlRule' => '<?= $url ?>/create',
+                        'url' => ['<?= $controllerClass->routePrefix ?>/create'],
+                        'urlRule' => '<?= $controllerClass->url ?>/create',
                     ],
 <?php } ?>
 <?php if ($createActionUpdate) { ?>
                     [
                         'label' => 'Редактирование',
-                        'url' => ['<?= $routePrefix ?>/update'],
-                        'urlRule' => '<?= $url ?>/update/<<?= $pkParam ?>:\d+>',
+                        'url' => ['<?= $controllerClass->routePrefix ?>/update'],
+                        'urlRule' => '<?= $controllerClass->url ?>/update/<<?= $modelClass->requestParamName ?>:\d+>',
                     ],
 <?php } ?>
 <?php if ($createActionView) { ?>
                     [
                         'label' => 'Просмотр',
-                        'url' => ['<?= $routePrefix ?>/view'],
-                        'urlRule' => '<?= $url ?>/<<?= $pkParam ?>:\d+>',
-                        'modelClass' => <?= $modelName ?>::className(),
+                        'url' => ['<?= $controllerClass->routePrefix ?>/view'],
+                        'urlRule' => '<?= $controllerClass->url ?>/<<?= $modelClass->requestParamName ?>:\d+>',
+                        'modelClass' => <?= $modelClass->name ?>::className(),
                     ],
 <?php } ?>
 <?php if ($withDelete) { ?>
                     [
-                        'url' => ['<?= $routePrefix ?>/delete'],
-                        'urlRule' => '<?= $url ?>/delete/<<?= $pkParam ?>:\d+>',
+                        'url' => ['<?= $controllerClass->routePrefix ?>/delete'],
+                        'urlRule' => '<?= $controllerClass->url ?>/delete/<<?= $modelClass->requestParamName ?>:\d+>',
                     ],
 <?php } ?>
                 ],
@@ -104,41 +89,41 @@ class <?= $className ?> extends AppController
     }
 <?php if ($createActionIndex && $withSearch) { ?>
 
-    public function actionIndex(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>)
+    public function actionIndex(<?= $controllerClass->renderActionArguments() ?>)
     {
-        $searchModel = new <?= $searchModelName ?>();
+        $searchModel = new <?= $searchModelClass->name ?>();
         $dataProvider = $searchModel->search(Yii::$app->request->queryParams);
 
         return $this->render('index', [
             'searchModel' => $searchModel,
             'dataProvider' => $dataProvider,
-<?php foreach ($requestFields as $requestField) { ?>
-            '<?= $requestField ?>' => $<?= $requestField ?>,
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+            '<?= $key ?>' => $<?= $key ?>,
 <?php } ?>
         ]);
     }
 <?php } ?>
 <?php if ($createActionIndex && !$withSearch) { ?>
 
-    public function actionIndex(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>)
+    public function actionIndex(<?= $controllerClass->renderActionArguments() ?>)
     {
         $dataProvider = new ActiveDataProvider([
-            'query' => <?= $modelName ?>::find(),
+            'query' => <?= $modelClass->name ?>::find(),
         ]);
 
         return $this->render('index', [
             'dataProvider' => $dataProvider,
-<?php foreach ($requestFields as $requestField) { ?>
-            '<?= $requestField ?>' => $<?= $requestField ?>,
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+            '<?= $key ?>' => $<?= $key ?>,
 <?php } ?>
         ]);
     }
 <?php } ?>
 <?php if ($createActionView) { ?>
 
-    public function actionView(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
+    public function actionView(<?= $controllerClass->renderActionArguments([$modelClass->requestParamName]) ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
+        $model = <?= $modelClass->name ?>::findOrPanic($<?= $modelClass->requestParamName ?>);
         if (!$model->canView(Yii::$app->user->model)) {
             throw new ForbiddenHttpException();
         }
@@ -149,19 +134,19 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionCreate) { ?>
 
-    public function actionCreate(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) : '' ?>)
+    public function actionCreate(<?= $controllerClass->renderActionArguments() ?>)
     {
-        $model = new <?= $modelName ?>();
-<?php foreach ($requestFields as $requestField) { ?>
-        $model-><?= $requestField ?> = $<?= $requestField ?>;
+        $model = new <?= $modelClass->name ?>();
+<?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
+        $model-><?= $key ?> = $<?= $key ?>;
 <?php } ?>
 
         if ($model->load(Yii::$app->request->post()) && $model->canCreate(Yii::$app->user->model) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Запись добавлена');
 <?php if ($createActionView) { ?>
-            return $this->redirect(['view'<?= $redirectParamsString ?>, '<?= $pkParam ?>' => $model->primaryKey]);
+            return $this->redirect(<?= $controllerClass->renderRoute('view', [$modelClass->requestParamName => '$model->primaryKey']) ?>);
 <?php } elseif ($createActionIndex) { ?>
-            return $this->redirect(['index'<?= $redirectParamsString ?>]);
+            return $this->redirect(<?= $controllerClass->renderRoute('index') ?>);
 <?php } else { ?>
             return $this->refresh();
 <?php } ?>
@@ -174,16 +159,17 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionUpdate) { ?>
 
-    public function actionUpdate(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
+    public function actionUpdate(<?= $controllerClass->renderActionArguments([$modelClass->requestParamName]) ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
+        $model = <?= $modelClass->name ?>::findOrPanic($<?= $modelClass->requestParamName ?>);
+        $model->fillManyMany();
 
         if ($model->load(Yii::$app->request->post()) && $model->canUpdate(Yii::$app->user->model) && $model->save()) {
             Yii::$app->session->setFlash('success', 'Запись обновлена');
 <?php if ($createActionView) { ?>
-            return $this->redirect(['view'<?= $redirectParamsString ?>, '<?= $pkParam ?>' => $model->primaryKey]);
+            return $this->redirect(<?= $controllerClass->renderRoute('view', [$modelClass->requestParamName => '$model->primaryKey']) ?>);
 <?php } elseif ($createActionIndex) { ?>
-            return $this->redirect(['index'<?= $redirectParamsString ?>]);
+            return $this->redirect(<?= $controllerClass->renderRoute('index') ?>);
 <?php } else { ?>
             return $this->refresh();
 <?php } ?>
@@ -196,15 +182,15 @@ class <?= $className ?> extends AppController
 <?php } ?>
 <?php if ($createActionIndex && $withDelete) { ?>
 
-    public function actionDelete(<?= count($requestFields) > 0 ? '$' . implode(', $', $requestFields) . ', ' : '' ?>$<?= $pkParam ?>)
+    public function actionDelete(<?= $controllerClass->renderActionArguments([$modelClass->requestParamName]) ?>)
     {
-        $model = <?= $modelName ?>::findOrPanic($<?= $pkParam ?>);
+        $model = <?= $modelClass->name ?>::findOrPanic($<?= $modelClass->requestParamName ?>);
         if ($model->canDelete(Yii::$app->user->model)) {
             $model->deleteOrPanic();
         } else {
             throw new ForbiddenHttpException();
         }
-        return $this->redirect(['index'<?= $redirectParamsString ?>]);
+        return $this->redirect(<?= $controllerClass->renderRoute('index') ?>);
     }
 <?php } ?>
 
