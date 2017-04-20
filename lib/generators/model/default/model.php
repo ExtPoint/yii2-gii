@@ -17,6 +17,6 @@ namespace <?= $modelClass->namespace ?>;
 
 use <?= $modelClass->metaClass->className ?>;
 
-class <?= $modelClass->name ?> extends <?= $modelClass->metaClass->name ?>Meta
+class <?= $modelClass->name ?> extends <?= $modelClass->metaClass->name . "\n" ?>
 {
 }

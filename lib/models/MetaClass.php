@@ -223,10 +223,10 @@ class MetaClass extends ModelClass
                 $params = array_merge([
                     'class' => new ValueExpression("$name::className()"),
                 ], $params);
-                $items[] = GiiHelper::varExport($params, $indent) . ",\n";
+                $items[] = GiiHelper::varExport($params, $indent) . ",";
             }
         }
-        return implode("\n" . $indent, $items);
+        return implode("\n" . $indent, $items) . "\n";
     }
 
     public function getProperties() {

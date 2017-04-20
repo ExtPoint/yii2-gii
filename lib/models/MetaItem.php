@@ -55,6 +55,11 @@ class MetaItem extends Object implements Arrayable
     /**
      * @var bool
      */
+    public $showInFilter;
+
+    /**
+     * @var bool
+     */
     public $showInTable;
 
     /**

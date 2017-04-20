@@ -14,7 +14,7 @@ class MigrationMethods extends Object
     const MIGRATE_MODE_UPDATE = 'update';
 
     /**
-     * @var ModelClass
+     * @var ModelClass|null
      */
     public $oldModelClass;
 
@@ -145,7 +145,11 @@ class MigrationMethods extends Object
                 }
             }
         }
-        return 'M' . gmdate('ymdHis') . '_' . ucfirst(implode('_', array_slice($parts, 0, 6)));
+
+        $parts = array_slice($parts, 0, 6);
+        $parts = array_map('ucfirst', $parts);
+
+        return 'M' . gmdate('ymdHis') . implode('', $parts);
     }
 
     protected function processCreateTable()
@@ -159,7 +163,7 @@ class MigrationMethods extends Object
 
     protected function processAddColumn()
     {
-        $oldMetaNames = ArrayHelper::getColumn($this->oldModelClass->metaClass->meta, 'name');
+        $oldMetaNames = $this->oldModelClass ? ArrayHelper::getColumn($this->oldModelClass->metaClass->meta, 'name') : [];
         foreach ($this->modelClass->metaClass->meta as $metaItem) {
             if (!in_array($metaItem->name, $oldMetaNames) && $metaItem->getDbType()) {
                 $this->addColumn[] = $metaItem;
@@ -170,7 +174,7 @@ class MigrationMethods extends Object
     protected function processUpdateColumn()
     {
         /** @var MetaItem $oldMeta [] */
-        $oldMeta = ArrayHelper::index($this->oldModelClass->metaClass->meta, 'name');
+        $oldMeta = $this->oldModelClass ? ArrayHelper::index($this->oldModelClass->metaClass->meta, 'name') : [];
         foreach ($this->modelClass->metaClass->meta as $metaItem) {
             if (!isset($oldMeta[$metaItem->name])) {
                 continue;
@@ -189,17 +193,19 @@ class MigrationMethods extends Object
 
     protected function processDropColumn()
     {
-        $metaNames = ArrayHelper::getColumn($this->modelClass->metaClass->meta, 'name');
-        foreach ($this->oldModelClass->metaClass->meta as $oldMetaItem) {
-            if (!in_array($oldMetaItem->name, $metaNames)) {
-                $this->dropColumn[] = $oldMetaItem;
+        if ($this->oldModelClass) {
+            $metaNames = ArrayHelper::getColumn($this->modelClass->metaClass->meta, 'name');
+            foreach ($this->oldModelClass->metaClass->meta as $oldMetaItem) {
+                if (!in_array($oldMetaItem->name, $metaNames)) {
+                    $this->dropColumn[] = $oldMetaItem;
+                }
             }
         }
     }
 
     protected function processJunction()
     {
-        $oldRelationNames = ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name');
+        $oldRelationNames = $this->oldModelClass ? ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name') : [];
         foreach ($this->modelClass->metaClass->relations as $relation) {
             if (!$relation->viaTable) {
                 continue;
@@ -224,7 +230,7 @@ class MigrationMethods extends Object
 
     protected function processForeignKeys()
     {
-        $oldRelationNames = ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name');
+        $oldRelationNames = $this->oldModelClass ? ArrayHelper::getColumn($this->oldModelClass->metaClass->relations, 'name') : [];
         foreach ($this->modelClass->metaClass->relations as $relation) {
             if ($relation->selfKey === 'id' || !$relation->isHasOne) {
                 continue;
