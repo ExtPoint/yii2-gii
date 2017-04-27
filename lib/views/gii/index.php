@@ -3,8 +3,8 @@
 namespace extpoint\yii2\views;
 
 use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\widgets\GridView;
 use yii\data\ArrayDataProvider;
-use yii\grid\GridView;
 use yii\helpers\Html;
 
 /* @var $this \yii\web\View */

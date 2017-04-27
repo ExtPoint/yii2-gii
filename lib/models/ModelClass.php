@@ -31,8 +31,9 @@ class ModelClass extends BaseClass
             foreach (self::findFiles('models') as $path => $className) {
                 /** @type Model $model */
                 $model = new $className();
+                $info = new \ReflectionClass($className);
 
-                if ($model instanceof Model) {
+                if ($model instanceof Model && !$info->isAbstract()) {
                     self::$_models[] = new ModelClass([
                         'className' => $model::className(),
                         'tableName' => $model::tableName(),
