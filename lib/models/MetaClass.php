@@ -11,7 +11,9 @@ use yii\helpers\ArrayHelper;
 /**
  * Class MetaClass
  * @property MetaItem[] $meta
+ * @property MetaItem[] $metaWithChild
  * @property Relation[] $relations
+ * @property array $phpDocProperties
  * @property array $properties
  */
 class MetaClass extends ModelClass
@@ -75,12 +77,25 @@ class MetaClass extends ModelClass
     }
 
     /**
+     * @return array
+     */
+    public function getMetaWithChild()
+    {
+        $items = [];
+        foreach ($this->getMeta() as $metaItem) {
+            $items[] = $metaItem;
+            $items = array_merge($items, $metaItem->items);
+        }
+        return $items;
+    }
+
+    /**
      * @param string $name
      * @return MetaItem|null
      */
     public function getMetaItem($name)
     {
-        foreach ($this->meta as $metaItem) {
+        foreach ($this->metaWithChild as $metaItem) {
             if ($metaItem->name === $name) {
                 return $metaItem;
             }
@@ -157,8 +172,13 @@ class MetaClass extends ModelClass
      */
     public function renderMeta($indent = '')
     {
+        return GiiHelper::varExport($this->exportMeta($this->meta), $indent);
+    }
+
+    protected function exportMeta($metaItems)
+    {
         $meta = [];
-        foreach ($this->meta as $metaItem) {
+        foreach ($metaItems as $metaItem) {
             $meta[$metaItem->name] = [];
             foreach ($metaItem as $key => $value) {
                 // Skip defaults
@@ -184,15 +204,21 @@ class MetaClass extends ModelClass
                     continue;
                 }
 
+                // Items process
+                if ($key === 'items') {
+                    $value = $this->exportMeta($value);
+                }
+
                 $meta[$metaItem->name][$key] = $value;
             }
         }
-        return GiiHelper::varExport($meta, $indent);
+        return $meta;
     }
 
-    public function renderBehaviors($indent = '', &$useClasses = []) {
+    public function renderBehaviors($indent = '', &$useClasses = [])
+    {
         $behaviors = [];
-        foreach ($this->meta as $metaItem) {
+        foreach ($this->metaWithChild as $metaItem) {
             $appType = \Yii::$app->types->getType($metaItem->appType);
             if (!$appType) {
                 continue;
@@ -229,9 +255,21 @@ class MetaClass extends ModelClass
         return implode("\n" . $indent, $items) . "\n";
     }
 
-    public function getProperties() {
+    public function getPhpDocProperties()
+    {
         $properties = [];
-        foreach ($this->meta as $metaItem) {
+        foreach ($this->metaWithChild as $metaItem) {
+            if ($metaItem->getDbType()) {
+                $properties[$metaItem->name] = $metaItem->phpDocType;
+            }
+        }
+        return $properties;
+    }
+
+    public function getProperties()
+    {
+        $properties = [];
+        foreach ($this->metaWithChild as $metaItem) {
             $appType = \Yii::$app->types->getType($metaItem->appType);
             if (!$appType) {
                 continue;

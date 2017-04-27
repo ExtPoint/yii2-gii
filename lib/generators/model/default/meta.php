@@ -32,11 +32,9 @@ use <?= $relationClassName ?>;
 <?php } ?>
 
 /**
-<?php foreach ($modelClass->metaClass->meta as $metaItem) {
-    if ($metaItem->getDbType()) { ?>
- * @property <?= "{$metaItem->phpDocType} \${$metaItem->name}\n" ?>
-<?php }
-} ?>
+<?php foreach ($modelClass->metaClass->phpDocProperties as $name => $phpDocType) { ?>
+ * @property <?= "{$phpDocType} \${$name}\n" ?>
+<?php } ?>
 <?php foreach ($modelClass->metaClass->relations as $relation) { ?>
  * @property-read <?= $relation->relationClass->name ?><?= !$relation->isHasOne ? '[]' : '' ?> <?= "\${$relation->name}\n" ?>
 <?php } ?>

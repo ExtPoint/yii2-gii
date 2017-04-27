@@ -154,7 +154,7 @@ class MigrationMethods extends Object
 
     protected function processCreateTable()
     {
-        foreach ($this->modelClass->metaClass->meta as $metaItem) {
+        foreach ($this->modelClass->metaClass->metaWithChild as $metaItem) {
             if ($metaItem->getDbType()) {
                 $this->createTable[] = $metaItem;
             }
@@ -163,8 +163,8 @@ class MigrationMethods extends Object
 
     protected function processAddColumn()
     {
-        $oldMetaNames = $this->oldModelClass ? ArrayHelper::getColumn($this->oldModelClass->metaClass->meta, 'name') : [];
-        foreach ($this->modelClass->metaClass->meta as $metaItem) {
+        $oldMetaNames = $this->oldModelClass ? ArrayHelper::getColumn($this->oldModelClass->metaClass->metaWithChild, 'name') : [];
+        foreach ($this->modelClass->metaClass->metaWithChild as $metaItem) {
             if (!in_array($metaItem->name, $oldMetaNames) && $metaItem->getDbType()) {
                 $this->addColumn[] = $metaItem;
             }
@@ -174,8 +174,8 @@ class MigrationMethods extends Object
     protected function processUpdateColumn()
     {
         /** @var MetaItem $oldMeta [] */
-        $oldMeta = $this->oldModelClass ? ArrayHelper::index($this->oldModelClass->metaClass->meta, 'name') : [];
-        foreach ($this->modelClass->metaClass->meta as $metaItem) {
+        $oldMeta = $this->oldModelClass ? ArrayHelper::index($this->oldModelClass->metaClass->metaWithChild, 'name') : [];
+        foreach ($this->modelClass->metaClass->metaWithChild as $metaItem) {
             if (!isset($oldMeta[$metaItem->name])) {
                 continue;
             }
@@ -194,8 +194,8 @@ class MigrationMethods extends Object
     protected function processDropColumn()
     {
         if ($this->oldModelClass) {
-            $metaNames = ArrayHelper::getColumn($this->modelClass->metaClass->meta, 'name');
-            foreach ($this->oldModelClass->metaClass->meta as $oldMetaItem) {
+            $metaNames = ArrayHelper::getColumn($this->modelClass->metaClass->metaWithChild, 'name');
+            foreach ($this->oldModelClass->metaClass->metaWithChild as $oldMetaItem) {
                 if (!in_array($oldMetaItem->name, $metaNames)) {
                     $this->dropColumn[] = $oldMetaItem;
                 }

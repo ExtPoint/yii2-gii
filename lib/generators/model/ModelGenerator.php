@@ -88,7 +88,7 @@ class ModelGenerator extends Generator
     {
         $types = [];
         $lengths = [];
-        foreach ($this->modelClass->metaClass->meta as $metaItem) {
+        foreach ($this->modelClass->metaClass->metaWithChild as $metaItem) {
             if ($metaItem->getDbType() === 'pk') {
                 continue;
             }

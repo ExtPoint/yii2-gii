@@ -12,6 +12,7 @@ use yii\helpers\ArrayHelper;
  * @property-read string $dbType
  * @property-read string $parsedDbType
  * @property-read string $phpDocType
+ * @property-read MetaItem[] $items
  */
 class MetaItem extends Object implements Arrayable
 {
@@ -167,6 +168,10 @@ class MetaItem extends Object implements Arrayable
         return $dbType ? self::parseDbType($dbType) : ['string'];
     }
 
+    public function getItems() {
+        return $this->appType ? \Yii::$app->types->getType($this->appType)->getItems($this) : [];
+    }
+
     public function renderMigrationColumnType()
     {
         $map = [
@@ -226,6 +231,7 @@ class MetaItem extends Object implements Arrayable
                 $fields[] = $property->getName();
             }
         }
+        $fields[] = 'items';
         return $fields;
     }
 
