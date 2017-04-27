@@ -69,51 +69,67 @@ class MetaItem extends Object implements Arrayable
 
     /**
      * Property of AutoTimeType
-     * @var
+     * @var bool
      */
     public $touchOnUpdate;
 
     /**
-     * Property of CurrencyType
-     * @var
+     * Property of MoneyType
+     * @var string
      */
     public $currency;
 
     /**
      * Property of CustomType
-     * @var
+     * @var string
      */
     public $dbType;
 
     /**
      * Property of DateTimeType and DateType
-     * @var
+     * @var string
      */
     public $format;
 
     /**
      * Property of EnumType
-     * @var
+     * @var string
      */
     public $enumClassName;
 
     /**
      * Property of ArrayType
-     * @var
+     * @var string
      */
     public $relationName;
 
     /**
      * Property of IntegerType
-     * @var
+     * @var bool
      */
     public $isDecimal;
 
     /**
      * Property of StringType
-     * @var
+     * @var string
      */
     public $stringType;
+
+    /**
+     * Property of StringType
+     * @var integer
+     */
+    public $stringLength;
+
+    /**
+     * @var string
+     */
+    public $subAppType;
+
+    /**
+     * @var string
+     */
+    public $refAttribute;
 
     /**
      * @param string $dbType

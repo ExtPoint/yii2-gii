@@ -23,7 +23,7 @@ class GiiController extends Controller
                 'urlRule' => 'admin/gii',
                 'order' => 500,
                 'roles' => 'admin',
-                'visible' => YII_DEBUG,
+                'visible' => YII_ENV_DEV,
                 'items' => [
                     [
                         'label' => 'Модель',

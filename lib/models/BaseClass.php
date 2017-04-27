@@ -5,7 +5,6 @@ namespace extpoint\yii2\gii\models;
 use yii\base\Arrayable;
 use yii\base\ArrayableTrait;
 use yii\base\Object;
-use yii\helpers\ArrayHelper;
 use yii\helpers\FileHelper;
 
 /**
