@@ -4,6 +4,7 @@ namespace extpoint\yii2\gii;
 
 use extpoint\yii2\base\Module;
 use extpoint\yii2\gii\controllers\GiiController;
+use extpoint\yii2\gii\controllers\SiteMapController;
 
 class GiiModule extends Module
 {
@@ -27,7 +28,10 @@ class GiiModule extends Module
     {
         return [
             'admin' => [
-                'items' => GiiController::coreMenuItems()
+                'items' => array_merge(
+                    GiiController::coreMenuItems(),
+                    SiteMapController::coreMenuItems()
+                )
             ],
         ];
     }

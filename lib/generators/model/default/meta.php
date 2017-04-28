@@ -78,8 +78,8 @@ abstract class <?= $modelClass->metaClass->name ?> extends AppModel
 <?php if ($relation->isHasOne || $relation->isHasMany) { ?>
         return $this-><?= $relation->type ?>(<?= $relation->relationClass->name ?>::className(), ['<?= $relation->relationKey ?>' => '<?= $relation->selfKey ?>']);
 <?php } elseif ($relation->isManyMany) { ?>
-        return $this->hasMany(<?= $relation->relationClass->name ?>::className(), ['<?= $relation->relationKey ?>' => '<?= $relation->viaRelationKey ?>'])
-            ->viaTable('<?= $relation->viaTable ?>', ['<?= $relation->viaSelfKey ?>' => '<?= $relation->selfKey ?>']);
+        return $this->hasMany(<?= $relation->relationClass->name ?>::className(), ['<?= $relation->relationKey ?>' => '<?= $relation->viaSelfKey ?>'])
+            ->viaTable('<?= $relation->viaTable ?>', ['<?= $relation->viaRelationKey ?>' => '<?= $relation->selfKey ?>']);
 <?php } ?>
     }
 <?php } ?>
