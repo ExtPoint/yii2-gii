@@ -2,6 +2,7 @@
 
 namespace extpoint\yii2\views;
 
+use extpoint\yii2\gii\models\EnumClass;
 use extpoint\yii2\gii\models\ModelClass;
 use extpoint\yii2\widgets\GridView;
 use yii\data\ArrayDataProvider;
@@ -9,6 +10,7 @@ use yii\helpers\Html;
 
 /* @var $this \yii\web\View */
 /* @var $modelDataProvider ArrayDataProvider */
+/* @var $enumDataProvider ArrayDataProvider */
 
 ?>
 
@@ -24,7 +26,6 @@ use yii\helpers\Html;
 <?= GridView::widget([
     'dataProvider' => $modelDataProvider,
     'columns' => [
-        'moduleClass.id',
         [
             'attribute' => 'name',
             'format' => 'raw',
@@ -34,6 +35,7 @@ use yii\helpers\Html;
             }
         ],
         'metaClass.name',
+        'moduleClass.id',
         'tableName',
         [
             'format' => 'raw',
@@ -42,6 +44,30 @@ use yii\helpers\Html;
                 return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/gii/crud', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name]);
             }
         ]
+    ],
+]) ?>
+
+<h3>
+    Enums
+    <?= Html::a(
+        '<span class="glyphicon glyphicon-plus"></span> Add',
+        ['enum'],
+        ['class' => 'btn btn-sm btn-success',]
+    ) ?>
+</h3>
+
+<?= GridView::widget([
+    'dataProvider' => $enumDataProvider,
+    'columns' => [
+        [
+            'attribute' => 'name',
+            'format' => 'raw',
+            'value' => function($model) {
+                /** @type EnumClass $model */
+                return Html::a($model->name, ['/gii/gii/enum', 'moduleId' => $model->moduleClass->id, 'enumName' => $model->name]);
+            }
+        ],
+        'moduleClass.id',
     ],
 ]) ?>
 

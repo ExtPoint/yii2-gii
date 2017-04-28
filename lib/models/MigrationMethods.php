@@ -109,7 +109,7 @@ class MigrationMethods extends Object
 
         if (!$this->oldModelClass) {
             $parts[] = 'create';
-            $parts[] = $this->modelClass->tableName;
+            $parts[] = $this->modelClass->name;
         } else {
             $parts[] = $this->modelClass->name;
 

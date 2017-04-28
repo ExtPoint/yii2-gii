@@ -2,10 +2,13 @@
 
 namespace extpoint\yii2\gii\controllers;
 
+use extpoint\yii2\gii\generators\enum\EnumGenerator;
 use extpoint\yii2\gii\generators\model\ModelGenerator;
 use extpoint\yii2\gii\generators\crud\CrudGenerator;
 use extpoint\yii2\gii\generators\module\ModuleGenerator;
 use extpoint\yii2\base\Controller;
+use extpoint\yii2\gii\models\EnumClass;
+use extpoint\yii2\gii\models\EnumMetaItem;
 use extpoint\yii2\gii\models\MetaItem;
 use extpoint\yii2\gii\models\ModelClass;
 use extpoint\yii2\gii\models\ModuleClass;
@@ -31,6 +34,11 @@ class GiiController extends Controller
                         'urlRule' => 'admin/gii/model',
                     ],
                     [
+                        'label' => 'Enum',
+                        'url' => ['/gii/gii/enum'],
+                        'urlRule' => 'admin/gii/enum',
+                    ],
+                    [
                         'label' => 'CRUD',
                         'url' => ['/gii/gii/crud'],
                         'urlRule' => 'admin/gii/crud',
@@ -44,10 +52,16 @@ class GiiController extends Controller
     {
         $modelDataProvider = new ArrayDataProvider([
             'allModels' => ModelClass::findAll(),
+            'pagination' => false,
+        ]);
+        $enumDataProvider = new ArrayDataProvider([
+            'allModels' => EnumClass::findAll(),
+            'pagination' => false,
         ]);
 
         return $this->render('index', [
             'modelDataProvider' => $modelDataProvider,
+            'enumDataProvider' => $enumDataProvider,
         ]);
     }
 
@@ -100,6 +114,48 @@ class GiiController extends Controller
             'initialValues' => [
                 'moduleId' => $moduleId,
                 'modelName' => $modelName,
+            ],
+        ]);
+    }
+
+    public function actionEnum($moduleId = null, $enumName = null)
+    {
+        if (\Yii::$app->request->isPost) {
+            $moduleId = \Yii::$app->request->post('moduleId');
+            $enumName = \Yii::$app->request->post('enumName');
+
+            // Check to create module
+            if ($moduleId && !ModuleClass::findOne($moduleId)) {
+                (new ModuleGenerator([
+                    'moduleId' => $moduleId,
+                ]))->generate();
+            }
+
+            // Update enum
+            if ($moduleId && $enumName) {
+                $enumClass = new EnumClass([
+                    'className' => EnumClass::idToClassName($moduleId, $enumName),
+                ]);
+                $enumClass->getMetaClass()->setMeta(
+                    array_map(function($item) use ($enumClass) {
+                        return new EnumMetaItem(array_merge($item, [
+                            'metaClass' => $enumClass->getMetaClass(),
+                        ]));
+                    }, \Yii::$app->request->post('meta', []))
+                );
+
+                (new EnumGenerator([
+                    'enumClass' => $enumClass,
+                ]))->generate();
+
+                return $this->redirect(['enum', 'moduleId' => $moduleId, 'enumName' => $enumName]);
+            }
+        }
+
+        return $this->render('enum', [
+            'initialValues' => [
+                'moduleId' => $moduleId,
+                'enumName' => $enumName,
             ],
         ]);
     }

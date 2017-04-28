@@ -19,7 +19,7 @@ class MetaItem extends Object implements Arrayable
     use ArrayableTrait;
 
     /**
-     * @var MetaClass
+     * @var ModelMetaClass
      */
     public $metaClass;
 

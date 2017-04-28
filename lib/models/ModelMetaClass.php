@@ -9,14 +9,13 @@ use yii\db\ActiveQuery;
 use yii\helpers\ArrayHelper;
 
 /**
- * Class MetaClass
  * @property MetaItem[] $meta
  * @property MetaItem[] $metaWithChild
  * @property Relation[] $relations
  * @property array $phpDocProperties
  * @property array $properties
  */
-class MetaClass extends ModelClass
+class ModelMetaClass extends ModelClass
 {
     /**
      * @var ModelClass
@@ -168,14 +167,15 @@ class MetaClass extends ModelClass
 
     /**
      * @param string $indent
-     * @return string
+     * @param array $useClasses
+     * @return mixed|string
      */
-    public function renderMeta($indent = '')
+    public function renderMeta($indent = '', &$useClasses = [])
     {
-        return GiiHelper::varExport($this->exportMeta($this->meta), $indent);
+        return GiiHelper::varExport($this->exportMeta($this->meta, $useClasses), $indent);
     }
 
-    protected function exportMeta($metaItems)
+    protected function exportMeta($metaItems, &$useClasses)
     {
         $meta = [];
         foreach ($metaItems as $metaItem) {
@@ -204,9 +204,15 @@ class MetaClass extends ModelClass
                     continue;
                 }
 
+                if ($key === 'enumClassName') {
+                    $enumClass = EnumClass::findOne($value);
+                    $value = new ValueExpression($enumClass->name . '::className()');
+                    $useClasses[] = $enumClass->className;
+                }
+
                 // Items process
                 if ($key === 'items') {
-                    $value = $this->exportMeta($value);
+                    $value = $this->exportMeta($value, $useClasses);
                 }
 
                 $meta[$metaItem->name][$key] = $value;
@@ -235,6 +241,9 @@ class MetaClass extends ModelClass
                 }
                 $behaviors[$className] = ArrayHelper::merge($behaviors[$className], $behaviour);
             }
+        }
+        if (empty($behaviors)) {
+            return '';
         }
 
         $items = [];

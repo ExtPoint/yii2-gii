@@ -13,6 +13,7 @@ use yii\web\View;
 $useClasses = [];
 $rules = $generator->exportRules($useClasses);
 $behaviors = $modelClass->metaClass->renderBehaviors('            ', $useClasses);
+$meta = $modelClass->metaClass->renderMeta('        ', $useClasses);
 
 if (count($modelClass->metaClass->relations) > 0) {
     $useClasses[] = 'yii\db\ActiveQuery';
@@ -85,6 +86,6 @@ abstract class <?= $modelClass->metaClass->name ?> extends AppModel
 
     public static function meta()
     {
-        return <?= $modelClass->metaClass->renderMeta('        ') ?>;
+        return <?= $meta ?>;
     }
 }

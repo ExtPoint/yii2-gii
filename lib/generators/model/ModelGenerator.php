@@ -34,7 +34,7 @@ class ModelGenerator extends Generator
 
     public function requiredTemplates()
     {
-        return ['meta', 'migrationCreate', 'migrationUpdate'];
+        return ['meta', 'migration', 'model'];
     }
 
     /**

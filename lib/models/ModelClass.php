@@ -5,7 +5,7 @@ namespace extpoint\yii2\gii\models;
 use extpoint\yii2\base\Model;
 
 /**
- * @property-read MetaClass $metaClass
+ * @property-read ModelMetaClass $metaClass
  * @property-read ModuleClass $moduleClass
  * @property-read string $requestParamName
  */
@@ -65,11 +65,11 @@ class ModelClass extends BaseClass
     }
 
     /**
-     * @return MetaClass
+     * @return ModelMetaClass
      */
     public function getMetaClass() {
         if ($this->_metaClass === null) {
-            $this->_metaClass = new MetaClass([
+            $this->_metaClass = new ModelMetaClass([
                 'className' => $this->getNamespace() . '\\meta\\' . $this->getName() . 'Meta',
                 'modelClass' => $this,
             ]);
