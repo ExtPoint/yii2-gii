@@ -5,7 +5,9 @@ namespace extpoint\yii2\gii\models;
 use extpoint\yii2\base\ArrayType;
 use extpoint\yii2\base\Model;
 use extpoint\yii2\gii\helpers\GiiHelper;
+use extpoint\yii2\types\StringType;
 use yii\db\ActiveQuery;
+use yii\db\Schema;
 use yii\helpers\ArrayHelper;
 
 /**
@@ -42,7 +44,7 @@ class ModelMetaClass extends ModelClass
                 $model = new $modelClass();
 
                 $modelMeta = $model::meta();
-                if ($modelMeta) {
+                if (0&&$modelMeta) {
                     $this->_meta = [];
                     foreach ($modelMeta as $name => $params) {
                         $metaItem = new MetaItem([
@@ -58,11 +60,92 @@ class ModelMetaClass extends ModelClass
                     }
                 } else {
                     $this->_meta = array_map(function ($attribute) use ($model) {
-                        return new MetaItem([
+                        $metaItem = new MetaItem([
                             'name' => $attribute,
                             'label' => $model->getAttributeLabel($attribute),
                             'hint' => $model->getAttributeHint($attribute),
                         ]);
+
+                        switch ($attribute) {
+                            case 'id':
+                                $metaItem->appType = 'primaryKey';
+                                break;
+
+                            case 'createTime':
+                                $metaItem->appType = 'autoTime';
+                                break;
+
+                            case 'updateTime':
+                                $metaItem->appType = 'autoTime';
+                                $metaItem->touchOnUpdate = true;
+                                break;
+
+                            case 'title':
+                            case 'name':
+                            case 'label':
+                                $metaItem->appType = 'string';
+                                $metaItem->stringType = StringType::TYPE_TEXT;
+                                break;
+
+                            case 'email':
+                                $metaItem->appType = 'string';
+                                $metaItem->stringType = StringType::TYPE_EMAIL;
+                                break;
+
+                            case 'phone':
+                                $metaItem->appType = 'string';
+                                $metaItem->stringType = StringType::TYPE_PHONE;
+                                break;
+
+                            case 'password':
+                                $metaItem->appType = 'string';
+                                $metaItem->stringType = StringType::TYPE_PASSWORD;
+                                break;
+                        }
+
+                        if ($metaItem->appType === 'string') {
+                            if (strpos($attribute, 'dateTime') !== false) {
+                                $metaItem->appType = 'dateTime';
+                            } elseif (strpos($attribute, 'date') !== false) {
+                                $metaItem->appType = 'date';
+                            } else {
+                                $schema = \Yii::$app->db->getTableSchema($model::tableName());
+                                $column = $schema ? $schema->getColumn($attribute) : null;
+                                $dbType = $column ? $column->dbType : null;
+
+                                switch ($dbType) {
+                                    case Schema::TYPE_TEXT:
+                                        $metaItem->appType = 'text';
+                                        break;
+
+                                    case Schema::TYPE_STRING:
+                                        $metaItem->appType = 'string';
+                                        break;
+
+                                    case Schema::TYPE_INTEGER:
+                                        $metaItem->appType = 'integer';
+                                        break;
+
+                                    case Schema::TYPE_DOUBLE:
+                                        $metaItem->appType = 'double';
+                                        break;
+
+                                    case Schema::TYPE_DATE:
+                                        $metaItem->appType = 'date';
+                                        break;
+
+                                    case Schema::TYPE_DATETIME:
+                                        $metaItem->appType = 'dateTime';
+                                        break;
+
+                                    case Schema::TYPE_BOOLEAN:
+                                        $metaItem->appType = 'boolean';
+                                        break;
+                                }
+                            }
+                        }
+
+                        return $metaItem;
                     }, $model->attributes());
                 }
             }
