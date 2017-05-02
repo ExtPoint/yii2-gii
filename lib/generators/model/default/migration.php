@@ -21,7 +21,8 @@ use extpoint\yii2\base\Migration;
 
 class <?= $migrationClass->name ?> extends Migration
 {
-    public function up() {
+    public function up()
+    {
 <?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
         $this->addColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
@@ -50,7 +51,8 @@ class <?= $migrationClass->name ?> extends Migration
 <?php } ?>
     }
 
-    public function down() {
+    public function down()
+    {
 <?php foreach ($migrationMethods->foreignKeys as $relation) { ?>
         $this->deleteForeignKey('<?= $migrationMethods->modelClass->tableName ?>', '<?= $relation->selfKey ?>', '<?= $relation->relationClass->tableName ?>', '<?= $relation->relationKey ?>');
 <?php } ?>

@@ -34,11 +34,12 @@ class BaseClass extends Object implements Arrayable
     public static function findFiles($dir)
     {
         $modelsClasses = [];
-        foreach (\Yii::$app->getModules() as $module) {
-            if ($module->id === 'debug' || $module->id === 'gii') {
+        foreach (\Yii::$app->getModules() as $id => $module) {
+            if ($id === 'debug' || $id === 'gii') {
                 continue;
             }
 
+            $module = \Yii::$app->getModule($id);
             $classInfo = new \ReflectionClass($module);
             $modulePath = dirname($classInfo->getFileName());
             $moduleNamespace = $classInfo->getNamespaceName();

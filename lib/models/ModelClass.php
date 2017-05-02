@@ -30,10 +30,23 @@ class ModelClass extends BaseClass
 
             foreach (self::findFiles('models') as $path => $className) {
                 /** @type Model $model */
-                $model = new $className();
                 $info = new \ReflectionClass($className);
+                if ($info->isAbstract()) {
+                    continue;
+                }
 
-                if ($model instanceof Model && !$info->isAbstract()) {
+                $hasRequiredParams = false;
+                foreach ($info->getConstructor()->getParameters() as $parameter) {
+                    if (!$parameter->isDefaultValueAvailable()) {
+                        $hasRequiredParams = true;
+                    }
+                }
+                if ($hasRequiredParams) {
+                    continue;
+                }
+
+                $model = new $className();
+                if ($model instanceof Model) {
                     self::$_models[] = new ModelClass([
                         'className' => $model::className(),
                         'tableName' => $model::tableName(),

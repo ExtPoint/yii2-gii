@@ -2,6 +2,8 @@
 
 namespace extpoint\yii2\gii\models;
 
+use extpoint\yii2\base\Enum;
+
 /**
  * @property-read ModuleClass $moduleClass
  * @property-read EnumMetaClass $metaClass
@@ -28,9 +30,11 @@ class EnumClass extends BaseClass
             self::$_enums = [];
 
             foreach (self::findFiles('enums') as $path => $className) {
-                self::$_enums[] = new EnumClass([
-                    'className' => $className,
-                ]);
+                if (is_subclass_of($className, Enum::className())) {
+                    self::$_enums[] = new EnumClass([
+                        'className' => $className,
+                    ]);
+                }
             }
         }
         return self::$_enums;

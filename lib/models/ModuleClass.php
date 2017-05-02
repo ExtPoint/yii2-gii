@@ -24,6 +24,8 @@ class ModuleClass extends BaseClass
                     continue;
                 }
 
+                $module = \Yii::$app->getModule($id);
+
                 /** @type Module $module */
                 self::$_modules[] = new static([
                     'className' => $module::className(),
