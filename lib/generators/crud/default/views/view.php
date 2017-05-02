@@ -43,9 +43,10 @@ use <?= $modelClass->className ?>;
 <?php if ($createActionIndex || $createActionUpdate || $withDelete) { ?>
 <div class="indent">
 <?php if (count($controllerClass->requestFieldsArray) === 0) { ?>
-    <?= "<?=" ?> CrudControls::widget() ?>
+    <?= "<?=" ?> CrudControls::widget(['model' => $model]) ?>
 <?php } else { ?>
     <?= "<?=" ?> CrudControls::widget([
+        'model' => $model,
         'actionParams' => [
 <?php foreach ($controllerClass->requestFieldsArray as $key) { ?>
             '<?= $key ?>' => $<?= $key ?>,
