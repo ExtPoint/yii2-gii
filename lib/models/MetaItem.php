@@ -49,6 +49,11 @@ class MetaItem extends Object implements Arrayable
     public $required;
 
     /**
+     * @var int|string
+     */
+    public $defaultValue;
+
+    /**
      * @var bool
      */
     public $showInForm;
@@ -199,7 +204,12 @@ class MetaItem extends Object implements Arrayable
 
         if (isset($map[$parts[0]])) {
             $arguments = count($parts) > 1 ? implode(', ', array_slice($parts, 1)) : '';
-            return '$this->' . $map[$parts[0]] . '(' . $arguments . ')' . ($this->required ? '->notNull()' : '');
+            $notNull = $this->required ? '->notNull()' : '';
+            $defaultValue = $this->defaultValue !== null && $this->defaultValue !== ''
+                ? '->defaultValue(' . (preg_match('/^[0-9]+$/', $this->defaultValue) ? $this->defaultValue : "'" . $this->defaultValue . "'") . ')'
+                : '';
+
+            return '$this->' . $map[$parts[0]] . '(' . $arguments . ')' . $notNull . $defaultValue;
         } else {
             return "'$dbType'";
         }
