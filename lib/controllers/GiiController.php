@@ -162,9 +162,7 @@ class GiiController extends Controller
 
     public function actionCrud($moduleId = null, $modelName = null)
     {
-        $modelClassName = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName))->className;
         $initialValues = [
-            'modelClassName' => $modelClassName,
             'moduleId' => $moduleId,
             'createActionIndex' => true,
             'withSearch' => true,
@@ -175,10 +173,14 @@ class GiiController extends Controller
         ];
 
         if (\Yii::$app->request->isPost) {
-            $modelClassName = \Yii::$app->request->post('modelClassName');
             $moduleId = \Yii::$app->request->post('moduleId');
+            $initialValues['moduleId'] = $moduleId;
+
+            $modelClassName = \Yii::$app->request->post('modelClassName');
+            $initialValues['modelClassName'] = $modelClassName;
+
             $name = \Yii::$app->request->post('name');
-            $modelName = ModelClass::findOne($modelClassName)->name;
+            $modelClass = ModelClass::findOne($modelClassName);
             $initialValues = \Yii::$app->request->post();
             unset($initialValues['_csrf']);
 
@@ -192,8 +194,10 @@ class GiiController extends Controller
             // Create CRUD
             if ($moduleId && $name) {
                 (new CrudGenerator($initialValues))->generate();
-                return $this->redirect(['crud', 'moduleId' => $moduleId, 'modelName' => $modelName]);
+                return $this->redirect(['crud', 'moduleId' => $modelClass->moduleClass->id, 'modelName' => $modelClass->name]);
             }
+        } else {
+            $initialValues['modelClassName'] = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName))->className;
         }
 
         return $this->render('crud', [

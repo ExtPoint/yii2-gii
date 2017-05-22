@@ -4,6 +4,7 @@ namespace extpoint\yii2\gii\generators\crud;
 
 use extpoint\yii2\gii\models\ControllerClass;
 use extpoint\yii2\gii\models\ModelClass;
+use extpoint\yii2\gii\models\ModuleClass;
 use extpoint\yii2\gii\models\SearchModelClass;
 use yii\gii\CodeFile;
 use yii\gii\Generator;
@@ -38,16 +39,18 @@ class CrudGenerator extends Generator
      */
     public function generate()
     {
+        $moduleClass = ModuleClass::findOne(ModuleClass::idToClassName($this->moduleId));
+
         $modelClass = ModelClass::findOne($this->modelClassName);
         $controllerClass = new ControllerClass([
-            'className' => $modelClass->moduleClass->namespace . '\\controllers\\' . ucfirst($this->name) . 'Controller',
+            'className' => $moduleClass->namespace . '\\controllers\\' . ucfirst($this->name) . 'Controller',
             'title' => $this->title,
             'url' => $this->url,
             'requestFields' => $this->requestFields,
             'roles' => $this->roles,
         ]);
         $searchModelClass = new SearchModelClass([
-            'className' => $modelClass->moduleClass->namespace . '\\forms\\' . $modelClass->name . 'Search',
+            'className' => $moduleClass->namespace . '\\forms\\' . $modelClass->name . 'Search',
             'modelClass' => $modelClass,
         ]);
 
@@ -98,7 +101,7 @@ class CrudGenerator extends Generator
             }
 
             (new CodeFile(
-                $modelClass->moduleClass->folderPath . '/views/' . $controllerClass->id . '/' . $templateName . '.php',
+                $moduleClass->folderPath . '/views/' . $controllerClass->id . '/' . $templateName . '.php',
                 $this->render('views/' . $templateName . '.php', [
                     'modelClass' => $modelClass,
                     'controllerClass' => $controllerClass,
