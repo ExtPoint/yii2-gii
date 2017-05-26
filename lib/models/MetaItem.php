@@ -110,6 +110,12 @@ class MetaItem extends Object implements Arrayable
     public $relationName;
 
     /**
+     * Property of ArrayType
+     * @var string
+     */
+    public $listRelationName;
+
+    /**
      * Property of IntegerType
      * @var bool
      */
