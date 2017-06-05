@@ -52,9 +52,7 @@ class ModelMetaClass extends ModelClass
                             'metaClass' => $this,
                         ]);
                         foreach ($params as $key => $value) {
-                            if (property_exists($metaItem, $key)) {
-                                $metaItem->$key = $value;
-                            }
+                            $metaItem->$key = $value;
                         }
                         $this->_meta[] = $metaItem;
                     }
@@ -258,6 +256,11 @@ class ModelMetaClass extends ModelClass
         return GiiHelper::varExport($this->exportMeta($this->meta, $useClasses), $indent);
     }
 
+    /**
+     * @param MetaItem[] $metaItems
+     * @param $useClasses
+     * @return array
+     */
     protected function exportMeta($metaItems, &$useClasses)
     {
         $meta = [];
@@ -300,6 +303,7 @@ class ModelMetaClass extends ModelClass
 
                 $meta[$metaItem->name][$key] = $value;
             }
+            $meta[$metaItem->name] = array_merge($meta[$metaItem->name], $metaItem->getCustomProperties());
         }
         return $meta;
     }
