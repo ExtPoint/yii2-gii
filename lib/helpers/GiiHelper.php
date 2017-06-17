@@ -18,7 +18,7 @@ class GiiHelper
         return \Yii::$app->db->schema->tableNames;
     }
 
-    public static function varExport($var, $indent = '')
+    public static function varExport($var, $indent = '', $arrayLine = false)
     {
         $type = gettype($var);
         if (in_array($var, ['true', 'false'])) {
@@ -33,12 +33,13 @@ class GiiHelper
             case 'array':
                 $indexed = array_keys($var) === range(0, count($var) - 1);
                 $r = [];
+                $arrayIndent = !$arrayLine ? "\n" : '';
                 foreach ($var as $key => $value) {
-                    $r[] = $indent . '    '
+                    $r[] = $indent . (!$arrayLine ? '    ' : '')
                         . ($indexed ? '' : static::varExport($key) . ' => ')
-                        . static::varExport($value, $indent . '    ');
+                        . static::varExport($value, !$arrayLine ? $indent . '    ' : '', $arrayLine);
                 }
-                return "[\n" . implode(",\n", $r) . "\n" . $indent . ']';
+                return "[$arrayIndent" . implode(",$arrayIndent", $r) . "$arrayIndent" . $indent . ']';
             case 'boolean':
                 return $var ? 'true' : 'false';
             default:

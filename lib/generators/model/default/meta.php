@@ -11,7 +11,7 @@ use yii\web\View;
 /* @var $modelClass ModelClass */
 
 $useClasses = [];
-$rules = $generator->exportRules($useClasses);
+$rules = $modelClass->metaClass->renderRules($useClasses);
 $behaviors = $modelClass->metaClass->renderBehaviors('            ', $useClasses);
 $meta = $modelClass->metaClass->renderMeta('        ', $useClasses);
 

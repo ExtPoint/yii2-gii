@@ -308,6 +308,64 @@ class ModelMetaClass extends ModelClass
         return $meta;
     }
 
+    public function renderRules(&$useClasses = [])
+    {
+
+        $types = [];
+        $lengths = [];
+        foreach ($this->modelClass->metaClass->metaWithChild as $metaItem) {
+            $type = \Yii::$app->types->getType($metaItem->appType);
+            if (!$type) {
+                continue;
+            }
+
+            $rules = $type->getGiiRules($metaItem, $useClasses) ?: [];
+            foreach ($rules as $rule) {
+                /** @var array $rule */
+                $attributes = (array) ArrayHelper::remove($rule, 0);
+                $name = ArrayHelper::remove($rule, 1);
+                $validatorRaw = "'$name'";
+                if (!empty($rule)) {
+                    $validatorRaw .= ', ' . substr(GiiHelper::varExport($rule, '', true), 1, -1);
+                }
+
+                foreach ($attributes as $attribute) {
+                    $types[$validatorRaw][] = $attribute;
+
+                    if ($metaItem->required) {
+                        $types["'required'"][] = $metaItem->name;
+                    }
+                }
+            }
+        }
+
+        $rules = [];
+        foreach ($types as $validatorRaw => $attributes) {
+            $attributesRaw = "'" . implode("', '", $attributes) . "'";
+            if (count($attributes) > 1) {
+                $attributesRaw = "[$attributesRaw]";
+            }
+
+            $rules[] = "[$attributesRaw, $validatorRaw]";
+        }
+
+        // Exist rules for foreign keys
+        foreach ($this->modelClass->metaClass->relations as $relation) {
+            if (!$relation->isHasOne) {
+                continue;
+            }
+
+            $attribute = $relation->name;
+            $refClassName = $relation->relationClass->name;
+            $useClasses[] = $relation->relationClass->className;
+            $targetAttributes = "'{$relation->selfKey}' => '{$relation->relationKey}'";
+
+            $rules[] = "['$attribute', 'exist', 'skipOnError' => true, 'targetClass' => $refClassName::className(), 'targetAttribute' => [$targetAttributes]]";
+        }
+
+        return $rules;
+    }
+
     public function renderBehaviors($indent = '', &$useClasses = [])
     {
         $behaviors = [];
