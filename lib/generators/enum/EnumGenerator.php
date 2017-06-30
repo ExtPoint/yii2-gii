@@ -36,6 +36,12 @@ class EnumGenerator extends Generator
                 'enumClass' => $this->enumClass,
             ])
         ))->save();
+        (new CodeFile(
+            $this->enumClass->metaClass->jsFilePath,
+            $this->render('meta_js.php', [
+                'enumClass' => $this->enumClass,
+            ])
+        ))->save();
         \Yii::$app->session->addFlash('success', 'Мета информция enum ' . $this->enumClass->metaClass->name . ' обновлена');
 
         // Create enum, if not exists

@@ -49,6 +49,12 @@ class ModelGenerator extends Generator
                 'modelClass' => $this->modelClass,
             ])
         ))->save();
+        (new CodeFile(
+            $this->modelClass->metaClass->jsFilePath,
+            $this->render('meta_js.php', [
+                'modelClass' => $this->modelClass,
+            ])
+        ))->save();
         \Yii::$app->session->addFlash('success', 'Мета информция модели ' . $this->modelClass->metaClass->name . ' обновлена');
 
         // Create model, if not exists

@@ -7,7 +7,6 @@ use extpoint\yii2\base\Widget;
 use extpoint\yii2\gii\helpers\GiiHelper;
 use extpoint\yii2\gii\models\ModelClass;
 use extpoint\yii2\gii\models\ModuleClass;
-use yii\helpers\ArrayHelper;
 
 class ModelEditor extends Widget
 {
@@ -27,7 +26,7 @@ class ModelEditor extends Widget
                 return [
                     'name' => $appType->name,
                     'title' => ucfirst($appType->name),
-                    'fieldProps' => $appType->getGiiFieldProps()
+                    'fieldProps' => $appType->giiOptions()
                 ];
             }, \Yii::$app->types->getTypes()),
         ]);

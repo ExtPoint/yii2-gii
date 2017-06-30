@@ -2,13 +2,14 @@
 
 namespace extpoint\yii2\gii\models;
 
-use extpoint\yii2\base\ArrayType;
 use extpoint\yii2\base\Model;
 use extpoint\yii2\gii\helpers\GiiHelper;
+use extpoint\yii2\types\RelationType;
 use extpoint\yii2\types\StringType;
 use yii\db\ActiveQuery;
 use yii\db\Schema;
 use yii\helpers\ArrayHelper;
+use yii\web\JsExpression;
 
 /**
  * @property MetaItem[] $meta
@@ -16,6 +17,7 @@ use yii\helpers\ArrayHelper;
  * @property Relation[] $relations
  * @property array $phpDocProperties
  * @property array $properties
+ * @property string $jsFilePath
  */
 class ModelMetaClass extends ModelClass
 {
@@ -49,6 +51,7 @@ class ModelMetaClass extends ModelClass
                     foreach ($modelMeta as $name => $params) {
                         $metaItem = new MetaItem([
                             'name' => $name,
+                            'oldName' => $name,
                             'metaClass' => $this,
                         ]);
                         foreach ($params as $key => $value) {
@@ -60,6 +63,7 @@ class ModelMetaClass extends ModelClass
                     $this->_meta = array_map(function ($attribute) use ($model) {
                         $metaItem = new MetaItem([
                             'name' => $attribute,
+                            'oldName' => $attribute,
                             'label' => $model->getAttributeLabel($attribute),
                             'hint' => $model->getAttributeHint($attribute),
                         ]);
@@ -86,18 +90,15 @@ class ModelMetaClass extends ModelClass
                                 break;
 
                             case 'email':
-                                $metaItem->appType = 'string';
-                                $metaItem->stringType = StringType::TYPE_EMAIL;
+                                $metaItem->appType = 'email';
                                 break;
 
                             case 'phone':
-                                $metaItem->appType = 'string';
-                                $metaItem->stringType = StringType::TYPE_PHONE;
+                                $metaItem->appType = 'phone';
                                 break;
 
                             case 'password':
-                                $metaItem->appType = 'string';
-                                $metaItem->stringType = StringType::TYPE_PASSWORD;
+                                $metaItem->appType = 'password';
                                 break;
                         }
 
@@ -164,7 +165,10 @@ class ModelMetaClass extends ModelClass
         $items = [];
         foreach ($this->getMeta() as $metaItem) {
             $items[] = $metaItem;
-            $items = array_merge($items, $metaItem->items);
+            foreach ($metaItem->items as $subMetaItem) {
+                $subMetaItem->oldName = $subMetaItem->name; // TODO Is hotfix, but not worked for rename functional in migration
+                $items[] = $subMetaItem;
+            }
         }
         return $items;
     }
@@ -257,6 +261,22 @@ class ModelMetaClass extends ModelClass
     }
 
     /**
+     * @param string $indent
+     * @param array $import
+     * @return mixed|string
+     */
+    public function renderJsMeta($indent = '', &$import = [])
+    {
+        $result = [];
+        foreach ($this->meta as $metaItem) {
+            $type = \Yii::$app->types->getType($metaItem->appType);
+            $result[$metaItem->name] = $type->getGiiJsMetaItem($metaItem, $import);
+        }
+
+        return GiiHelper::varJsExport($result, $indent);
+    }
+
+    /**
      * @param MetaItem[] $metaItems
      * @param $useClasses
      * @return array
@@ -276,7 +296,7 @@ class ModelMetaClass extends ModelClass
                 }
 
                 // Skip array key
-                if ($key === 'name') {
+                if ($key === 'name' || $key === 'oldName') {
                     continue;
                 }
 
@@ -319,12 +339,12 @@ class ModelMetaClass extends ModelClass
                 continue;
             }
 
-            $rules = $type->getGiiRules($metaItem, $useClasses) ?: [];
+            $rules = $type->giiRules($metaItem, $useClasses) ?: [];
             foreach ($rules as $rule) {
                 /** @var array $rule */
                 $attributes = (array) ArrayHelper::remove($rule, 0);
                 $name = ArrayHelper::remove($rule, 1);
-                $validatorRaw = "'$name'";
+                $validatorRaw = GiiHelper::varExport($name);
                 if (!empty($rule)) {
                     $validatorRaw .= ', ' . substr(GiiHelper::varExport($rule, '', true), 1, -1);
                 }
@@ -375,7 +395,7 @@ class ModelMetaClass extends ModelClass
                 continue;
             }
 
-            foreach ($appType->getGiiBehaviors($metaItem) as $behaviour) {
+            foreach ($appType->giiBehaviors($metaItem) as $behaviour) {
                 if (is_string($behaviour)) {
                     $behaviour = ['class' => $behaviour];
                 }
@@ -429,9 +449,9 @@ class ModelMetaClass extends ModelClass
                 continue;
             }
 
-            if ($appType instanceof ArrayType && !$appType->getGiiDbType($metaItem)) {
+            if ($appType instanceof RelationType && !$appType->giiDbType($metaItem)) {
                 $relation = $metaItem->metaClass->getRelation($metaItem->relationName);
-                $properties[$metaItem->name] = $relation && !$relation->isHasOne ? '[]' : '';
+                $properties[$metaItem->name] = $relation && !$relation->isHasOne ? '[]' : null;
             }
         }
         return $properties;
@@ -446,4 +466,13 @@ class ModelMetaClass extends ModelClass
             'relations',
         ];
     }
+
+    /**
+     * @return string
+     */
+    public function getJsFilePath()
+    {
+        return $this->getFolderPath() . '/' . $this->getName() . '.js';
+    }
+
 }

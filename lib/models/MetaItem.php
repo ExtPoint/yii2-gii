@@ -31,6 +31,11 @@ class MetaItem extends Object implements Arrayable
     /**
      * @var string
      */
+    public $oldName;
+
+    /**
+     * @var string
+     */
     public $label;
 
     /**
@@ -104,22 +109,16 @@ class MetaItem extends Object implements Arrayable
     public $enumClassName;
 
     /**
-     * Property of ArrayType
+     * Property of RelationType
      * @var string
      */
     public $relationName;
 
     /**
-     * Property of ArrayType
+     * Property of RelationType
      * @var string
      */
     public $listRelationName;
-
-    /**
-     * Property of IntegerType
-     * @var bool
-     */
-    public $isDecimal;
 
     /**
      * Property of StringType
@@ -172,7 +171,7 @@ class MetaItem extends Object implements Arrayable
         if (!$this->appType) {
             return 'string';
         }
-        return $this->dbType ?: \Yii::$app->types->getType($this->appType)->getGiiDbType($this);
+        return $this->dbType ?: \Yii::$app->types->getType($this->appType)->giiDbType($this);
     }
 
     /**

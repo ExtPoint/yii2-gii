@@ -21,10 +21,13 @@ use extpoint\yii2\base\Migration;
 
 class <?= $migrationClass->name ?> extends Migration
 {
-    public function up()
+    public function safeUp()
     {
 <?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
         $this->addColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
+<?php } ?>
+<?php foreach ($migrationMethods->renameColumn as $metaItem) { ?>
+        $this->renameColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->oldName ?>', '<?= $metaItem->name ?>');
 <?php } ?>
 <?php foreach ($migrationMethods->alterColumn as $metaItem) { ?>
         $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
@@ -51,7 +54,7 @@ class <?= $migrationClass->name ?> extends Migration
 <?php } ?>
     }
 
-    public function down()
+    public function safeDown()
     {
 <?php foreach ($migrationMethods->foreignKeys as $relation) { ?>
         $this->deleteForeignKey('<?= $migrationMethods->modelClass->tableName ?>', '<?= $relation->selfKey ?>', '<?= $relation->relationClass->tableName ?>', '<?= $relation->relationKey ?>');
@@ -67,6 +70,9 @@ class <?= $migrationClass->name ?> extends Migration
 <?php } ?>
 <?php foreach ($migrationMethods->alterColumnDown as $metaItem) { ?>
         $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
+<?php } ?>
+<?php foreach ($migrationMethods->renameColumn as $metaItem) { ?>
+        $this->renameColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', '<?= $metaItem->oldName ?>');
 <?php } ?>
 <?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
         $this->dropColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>');

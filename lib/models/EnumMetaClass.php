@@ -7,6 +7,7 @@ use extpoint\yii2\gii\helpers\GiiHelper;
 
 /**
  * @property EnumMetaItem[] $meta
+ * @property string $jsFilePath
  */
 class EnumMetaClass extends EnumClass
 {
@@ -65,6 +66,19 @@ class EnumMetaClass extends EnumClass
      * @param string $indent
      * @return mixed|string
      */
+    public function renderJsLabels($indent = '') {
+        $lines = [];
+        foreach ($this->meta as $enumMetaItem) {
+            $lines[] = $indent . '    [this.' . strtoupper($enumMetaItem->name) . ']: '
+                . '\'' . str_replace("'", "\\'", $enumMetaItem->label) . '\',';
+        }
+        return "{\n" . implode("\n", $lines) . "\n" . $indent . '}';
+    }
+
+    /**
+     * @param string $indent
+     * @return mixed|string
+     */
     public function renderCssClasses($indent = '') {
         $cssClasses = [];
         foreach ($this->meta as $enumMetaItem) {
@@ -75,6 +89,21 @@ class EnumMetaClass extends EnumClass
         return !empty($cssClasses) ? GiiHelper::varExport($cssClasses, $indent) : '';
     }
 
+    /**
+     * @param string $indent
+     * @return mixed|string
+     */
+    public function renderJsCssClasses($indent = '') {
+        $lines = [];
+        foreach ($this->meta as $enumMetaItem) {
+            if ($enumMetaItem->cssClass) {
+                $lines[] = $indent . '    [this.' . strtoupper($enumMetaItem->name) . ']: '
+                    . '\'' . str_replace("'", "\\'", $enumMetaItem->cssClass) . '\',';
+            }
+        }
+        return !empty($lines) ? "{\n" . implode("\n", $lines) . "\n" . $indent . '}' : '';
+    }
+
     public function fields()
     {
         return [
@@ -82,5 +111,13 @@ class EnumMetaClass extends EnumClass
             'name',
             'meta',
         ];
+    }
+
+    /**
+     * @return string
+     */
+    public function getJsFilePath()
+    {
+        return $this->getFolderPath() . '/' . $this->getName() . '.js';
     }
 }

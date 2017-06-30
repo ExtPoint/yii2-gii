@@ -4,6 +4,7 @@ namespace extpoint\yii2\gii\helpers;
 
 use extpoint\yii2\gii\models\ValueExpression;
 use yii\db\Schema;
+use yii\helpers\Json;
 
 class GiiHelper
 {
@@ -25,7 +26,7 @@ class GiiHelper
             $type = 'boolean';
         }
         if ($var instanceof ValueExpression) {
-            return (string) $var;
+            return (string)$var;
         }
         switch ($type) {
             case 'string':
@@ -45,5 +46,12 @@ class GiiHelper
             default:
                 return var_export($var, TRUE);
         }
+    }
+
+    public static function varJsExport($var, $indent = '')
+    {
+        $code = Json::encode($var, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $code = str_replace("\n", "\n$indent", $code);
+        return $code;
     }
 }
