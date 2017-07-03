@@ -24,6 +24,11 @@ class GiiModule extends Module
      */
     public $newDirMode = 0777;
 
+    /**
+     * @var array
+     */
+    public $allowedIPs = ['127.0.0.1', '::1'];
+
     public function coreMenu()
     {
         return [
@@ -31,8 +36,22 @@ class GiiModule extends Module
                 'items' => array_merge(
                     GiiController::coreMenuItems(),
                     SiteMapController::coreMenuItems()
-                )
+                ),
             ],
         ];
+    }
+
+    public static function accessCheck() {
+        if (!YII_ENV_DEV) {
+            return false;
+        }
+
+        $ip = \Yii::$app->getRequest()->getUserIP();
+        foreach (static::getInstance()->allowedIPs as $filter) {
+            if ($filter === '*' || $filter === $ip || (($pos = strpos($filter, '*')) !== false && !strncmp($ip, $filter, $pos))) {
+                return true;
+            }
+        }
+        return false;
     }
 }

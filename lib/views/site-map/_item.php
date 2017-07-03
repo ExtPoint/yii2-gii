@@ -10,10 +10,11 @@ use extpoint\yii2\gii\helpers\GiiHelper;
 /* @var $index int */
 /* @var $level int */
 /* @var $id string */
+/* @var $active bool */
 
 ?>
 
-<tr>
+<tr <?= $active ? 'class="info"' : '' ?>>
     <td><?= $index + 1 ?></td>
     <td>
         <code>
@@ -33,7 +34,15 @@ use extpoint\yii2\gii\helpers\GiiHelper;
         <?= $megaMenuItem->icon ?>
     </td>
     <td>
-        <?= implode(', ', (array) $megaMenuItem->roles) ?>
+        <?php
+        $access = [];
+        foreach (array_merge((array) $megaMenuItem->roles, (array) $megaMenuItem->accessCheck) as $accessItem) {
+            foreach ((array)$accessItem as $accessSubItem) {
+                $access[] = is_callable($accessSubItem) ? 'func()' : (string) $accessSubItem;
+            }
+        }
+        ?>
+        <?= implode(', ', $access) ?>
     </td>
     <td class="<?= $megaMenuItem->visible ? 'text-success' : 'text-danger' ?>">
         <?= \Yii::$app->formatter->asBoolean($megaMenuItem->visible) ?>

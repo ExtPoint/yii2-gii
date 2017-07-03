@@ -3,12 +3,15 @@
 namespace extpoint\yii2\gii\controllers;
 
 use extpoint\yii2\gii\generators\enum\EnumGenerator;
+use extpoint\yii2\gii\generators\formModel\FormModelGenerator;
 use extpoint\yii2\gii\generators\model\ModelGenerator;
 use extpoint\yii2\gii\generators\crud\CrudGenerator;
 use extpoint\yii2\gii\generators\module\ModuleGenerator;
 use extpoint\yii2\base\Controller;
+use extpoint\yii2\gii\GiiModule;
 use extpoint\yii2\gii\models\EnumClass;
 use extpoint\yii2\gii\models\EnumMetaItem;
+use extpoint\yii2\gii\models\FormModelClass;
 use extpoint\yii2\gii\models\MetaItem;
 use extpoint\yii2\gii\models\ModelClass;
 use extpoint\yii2\gii\models\ModuleClass;
@@ -18,20 +21,26 @@ use yii\helpers\ArrayHelper;
 
 class GiiController extends Controller
 {
-    public static function coreMenuItems() {
+    public static function coreMenuItems()
+    {
         return [
             'gii' => [
                 'label' => 'Генератор кода',
                 'url' => ['/gii/gii/index'],
                 'urlRule' => 'admin/gii',
                 'order' => 500,
-                'roles' => 'admin',
+                'accessCheck' => [GiiModule::className(), 'accessCheck'],
                 'visible' => YII_ENV_DEV,
                 'items' => [
                     [
                         'label' => 'Модель',
                         'url' => ['/gii/gii/model'],
                         'urlRule' => 'admin/gii/model',
+                    ],
+                    [
+                        'label' => 'Форма',
+                        'url' => ['/gii/gii/form-model'],
+                        'urlRule' => 'admin/gii/form-model',
                     ],
                     [
                         'label' => 'Enum',
@@ -50,18 +59,21 @@ class GiiController extends Controller
 
     public function actionIndex()
     {
-        $modelDataProvider = new ArrayDataProvider([
-            'allModels' => ModelClass::findAll(),
-            'pagination' => false,
-        ]);
-        $enumDataProvider = new ArrayDataProvider([
-            'allModels' => EnumClass::findAll(),
-            'pagination' => false,
-        ]);
+        $modules = [];
+        foreach (ModelClass::findAll() as $modelClass) {
+            $modules[$modelClass->moduleClass->id]['models'][] = $modelClass;
+        }
+        foreach (FormModelClass::findAll() as $formModelClass) {
+            $modules[$formModelClass->moduleClass->id]['formModels'][] = $formModelClass;
+        }
+        foreach (EnumClass::findAll() as $enumClass) {
+            $modules[$enumClass->moduleClass->id]['enums'][] = $enumClass;
+        }
+
+        ksort($modules);
 
         return $this->render('index', [
-            'modelDataProvider' => $modelDataProvider,
-            'enumDataProvider' => $enumDataProvider,
+            'modules' => $modules,
         ]);
     }
 
@@ -85,14 +97,14 @@ class GiiController extends Controller
                     'tableName' => \Yii::$app->request->post('tableName'),
                 ]);
                 $modelClass->getMetaClass()->setMeta(
-                    array_map(function($item) use ($modelClass) {
+                    array_map(function ($item) use ($modelClass) {
                         return new MetaItem(array_merge($item, [
                             'metaClass' => $modelClass->getMetaClass(),
                         ]));
                     }, \Yii::$app->request->post('meta', []))
                 );
                 $modelClass->getMetaClass()->setRelations(
-                    array_map(function($item) {
+                    array_map(function ($item) {
                         $className = ArrayHelper::remove($item, 'relationModelClassName');
                         return new Relation(array_merge($item, [
                             'relationClass' => ModelClass::findOne($className),
@@ -118,6 +130,50 @@ class GiiController extends Controller
         ]);
     }
 
+    public function actionFormModel($moduleId = null, $formModelName = null)
+    {
+        if (\Yii::$app->request->isPost) {
+            $moduleId = \Yii::$app->request->post('moduleId');
+            $formModelName = \Yii::$app->request->post('formModelName');
+
+            // Check to create module
+            if ($moduleId && !ModuleClass::findOne($moduleId)) {
+                (new ModuleGenerator([
+                    'moduleId' => $moduleId,
+                ]))->generate();
+            }
+
+            // Update form model
+            if ($moduleId && $formModelName) {
+                $formModelClass = new FormModelClass([
+                    'className' => FormModelClass::idToClassName($moduleId, $formModelName),
+                ]);
+                $modelClass = ModelClass::findOne(\Yii::$app->request->post('modelClass'));
+                $formModelClass->getMetaClass()->setMeta(
+                    array_map(function ($item) use ($formModelClass) {
+                        return new MetaItem(array_merge($item, [
+                            'metaClass' => $formModelClass->getMetaClass(),
+                        ]));
+                    }, \Yii::$app->request->post('meta', []))
+                );
+
+                (new FormModelGenerator([
+                    'formModelClass' => $formModelClass,
+                    'modelClass' => $modelClass,
+                ]))->generate();
+
+                return $this->redirect(['form-model', 'moduleId' => $moduleId, 'formModelName' => $formModelName]);
+            }
+        }
+
+        return $this->render('form-model', [
+            'initialValues' => [
+                'moduleId' => $moduleId,
+                'formModelName' => $formModelName,
+            ],
+        ]);
+    }
+
     public function actionEnum($moduleId = null, $enumName = null)
     {
         if (\Yii::$app->request->isPost) {
@@ -137,7 +193,7 @@ class GiiController extends Controller
                     'className' => EnumClass::idToClassName($moduleId, $enumName),
                 ]);
                 $enumClass->getMetaClass()->setMeta(
-                    array_map(function($item) use ($enumClass) {
+                    array_map(function ($item) use ($enumClass) {
                         return new EnumMetaItem(array_merge($item, [
                             'metaClass' => $enumClass->getMetaClass(),
                         ]));

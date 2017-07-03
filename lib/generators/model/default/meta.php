@@ -52,6 +52,17 @@ abstract class <?= $modelClass->metaClass->name ?> extends AppModel
     {
         return '<?= $modelClass->tableName ?>';
     }
+
+    public function fields()
+    {
+        return [
+<?php foreach ($modelClass->metaClass->metaWithChild as $metaItem) {
+if ($metaItem->publishToFrontend) {?>
+            '<?= $metaItem->name ?>',
+<?php }
+} ?>
+        ];
+    }
 <?php if (!empty($rules)) { ?>
 
     public function rules()
