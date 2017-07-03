@@ -23,7 +23,7 @@ use extpoint\yii2\base\Enum;
 abstract class <?= $enumClass->metaClass->name ?> extends Enum
 {
 <?php foreach ($enumClass->metaClass->meta as $enumMetaItem) { ?>
-    const <?= $enumMetaItem->constName ?> = '<?= $enumMetaItem->name ?>';
+    const <?= $enumMetaItem->constName ?> = <?= is_numeric($enumMetaItem->value) ? $enumMetaItem->value :  "'" . $enumMetaItem->value . "'" ?>;
 <?php } ?>
 
     public static function getLabels()
@@ -35,6 +35,18 @@ abstract class <?= $enumClass->metaClass->name ?> extends Enum
     public static function getCssClasses()
     {
         return <?= $cssClasses ?>;
+    }
+<?php } ?>
+<?php foreach ($enumClass->metaClass->getCustomColumns() as $columnName) { ?>
+
+    public static function get<?= ucfirst($columnName) ?>Data()
+    {
+        return <?= $enumClass->metaClass->renderCustomColumn($columnName, '        ') ?>;
+    }
+
+    public static function get<?= ucfirst($columnName) ?>($id)
+    {
+        return isset($data[$id]) ? $data[$id] : null;
     }
 <?php } ?>
 }

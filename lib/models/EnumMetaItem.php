@@ -26,12 +26,22 @@ class EnumMetaItem extends Object implements Arrayable
     /**
      * @var string
      */
+    public $value;
+
+    /**
+     * @var string
+     */
     public $label;
 
     /**
      * @var string
      */
     public $cssClass;
+
+    /**
+     * @var array
+     */
+    public $customColumns = [];
 
     public function getConstName() {
         return strtoupper($this->name);

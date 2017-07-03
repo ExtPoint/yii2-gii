@@ -223,6 +223,9 @@ class GiiController extends Controller
                 } else {
                     $enumClass->getMetaClass()->setMeta(
                         array_map(function ($item) use ($enumClass) {
+                            if (empty($item['value'])) {
+                                $item['value'] = $item['name'];
+                            }
                             return new EnumMetaItem(array_merge($item, [
                                 'metaClass' => $enumClass->getMetaClass(),
                             ]));

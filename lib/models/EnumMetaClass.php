@@ -8,6 +8,7 @@ use extpoint\yii2\gii\helpers\GiiHelper;
 /**
  * @property EnumMetaItem[] $meta
  * @property string $jsFilePath
+ * @property string[] $customColumns
  */
 class EnumMetaClass extends EnumClass
 {
@@ -24,20 +25,38 @@ class EnumMetaClass extends EnumClass
     /**
      * @return EnumMetaItem[]
      */
-    public function getMeta() {
+    public function getMeta()
+    {
         if (!$this->_meta) {
-            /** @var Enum $moduleClass */
-            $moduleClass = $this->enumClass->className;
+            /** @var Enum $enumClass */
+            $enumClass = $this->enumClass->className;
 
             $this->_meta = [];
-            $cssClasses = $moduleClass::getCssClasses();
+            $cssClasses = $enumClass::getCssClasses();
 
-            foreach ($moduleClass::getLabels() as $name => $label) {
-                $this->_meta[] = new EnumMetaItem([
-                    'name' => $name,
+            $info = new \ReflectionClass($enumClass);
+            $constants = $info->getConstants();
+
+            $customColumns = [];
+            foreach ($info->getMethods() as $method) {
+                if ($method->getNumberOfParameters() === 0 && preg_match('/^get(.+)Data$/', $method->name, $match)) {
+                    $columnName = lcfirst($match[1]);
+                    $methodName = $method->name;
+                    $customColumns[$columnName] = $enumClass::$methodName();
+                }
+            }
+
+            foreach ($enumClass::getLabels() as $value => $label) {
+                $item = new EnumMetaItem([
+                    'value' => $value,
+                    'name' => strtolower(array_search($value, $constants)),
                     'label' => $label,
-                    'cssClass' => isset($cssClasses[$name]) ? $cssClasses[$name] : '',
+                    'cssClass' => isset($cssClasses[$value]) ? $cssClasses[$value] : '',
                 ]);
+                foreach ($customColumns as $columnName => $values) {
+                    $item->customColumns[$columnName] = isset($values[$value]) ? $values[$value] : '';
+                }
+                $this->_meta[] = $item;
             }
         }
         return $this->_meta;
@@ -46,7 +65,8 @@ class EnumMetaClass extends EnumClass
     /**
      * @param EnumMetaItem[] $value
      */
-    public function setMeta($value) {
+    public function setMeta($value)
+    {
         $this->_meta = $value;
     }
 
@@ -54,10 +74,11 @@ class EnumMetaClass extends EnumClass
      * @param string $indent
      * @return mixed|string
      */
-    public function renderLabels($indent = '') {
+    public function renderLabels($indent = '')
+    {
         $labels = [];
         foreach ($this->meta as $enumMetaItem) {
-            $labels[$enumMetaItem->name] = $enumMetaItem->label;
+            $labels[$enumMetaItem->value] = $enumMetaItem->label;
         }
         return GiiHelper::varExport($labels, $indent);
     }
@@ -66,7 +87,8 @@ class EnumMetaClass extends EnumClass
      * @param string $indent
      * @return mixed|string
      */
-    public function renderJsLabels($indent = '') {
+    public function renderJsLabels($indent = '')
+    {
         $lines = [];
         foreach ($this->meta as $enumMetaItem) {
             $lines[] = $indent . '    [this.' . strtoupper($enumMetaItem->name) . ']: '
@@ -79,21 +101,53 @@ class EnumMetaClass extends EnumClass
      * @param string $indent
      * @return mixed|string
      */
-    public function renderCssClasses($indent = '') {
+    public function renderCssClasses($indent = '')
+    {
         $cssClasses = [];
         foreach ($this->meta as $enumMetaItem) {
             if ($enumMetaItem->cssClass) {
-                $cssClasses[$enumMetaItem->name] = $enumMetaItem->cssClass;
+                $cssClasses[$enumMetaItem->value] = $enumMetaItem->cssClass;
             }
         }
         return !empty($cssClasses) ? GiiHelper::varExport($cssClasses, $indent) : '';
     }
 
     /**
+     * @return string[]
+     */
+    public function getCustomColumns()
+    {
+        $columns = [];
+        if (!empty($this->meta)) {
+            foreach ($this->meta[0]->customColumns as $name => $value) {
+                $columns[] = $name;
+            }
+        }
+        return $columns;
+    }
+
+    /**
+     * @param string $name
      * @param string $indent
      * @return mixed|string
      */
-    public function renderJsCssClasses($indent = '') {
+    public function renderCustomColumn($name, $indent = '')
+    {
+        $values = [];
+        foreach ($this->meta as $enumMetaItem) {
+            if (isset($enumMetaItem->customColumns[$name])) {
+                $values[$enumMetaItem->value] = $enumMetaItem->customColumns[$name];
+            }
+        }
+        return !empty($values) ? GiiHelper::varExport($values, $indent) : '';
+    }
+
+    /**
+     * @param string $indent
+     * @return mixed|string
+     */
+    public function renderJsCssClasses($indent = '')
+    {
         $lines = [];
         foreach ($this->meta as $enumMetaItem) {
             if ($enumMetaItem->cssClass) {
