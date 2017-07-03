@@ -25,6 +25,9 @@ namespace <?= $formModelClass->metaClass->namespace ?>;
 use extpoint\yii2\base\FormModel;
 use extpoint\yii2\traits\ISearchModelTrait;
 use extpoint\yii2\traits\SearchModelTrait;
+<?php foreach (array_unique($useClasses) as $relationClassName) { ?>
+use <?= $relationClassName ?>;
+<?php } ?>
 <?php if ($modelClass) { ?>
 use <?= $modelClass->className ?>;
 <?php } ?>

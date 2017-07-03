@@ -190,10 +190,7 @@ class MetaItem extends Object implements Arrayable
 
     public function getItems() {
         $type = \Yii::$app->types->getType($this->appType);
-        if (!$type) {
-            var_dump($this->appType);exit();
-        }
-        return $this->appType ? \Yii::$app->types->getType($this->appType)->getItems($this) : [];
+        return $type ? $type->getItems($this) : [];
     }
 
     public function renderMigrationColumnType()

@@ -92,31 +92,42 @@ class GiiController extends Controller
 
             // Update model
             if ($moduleId && $modelName) {
-                $modelClass = new ModelClass([
-                    'className' => ModelClass::idToClassName($moduleId, $modelName),
-                    'tableName' => \Yii::$app->request->post('tableName'),
-                ]);
-                $modelClass->getMetaClass()->setMeta(
-                    array_map(function ($item) use ($modelClass) {
-                        return new MetaItem(array_merge($item, [
-                            'metaClass' => $modelClass->getMetaClass(),
-                        ]));
-                    }, \Yii::$app->request->post('meta', []))
-                );
-                $modelClass->getMetaClass()->setRelations(
-                    array_map(function ($item) {
-                        $className = ArrayHelper::remove($item, 'relationModelClassName');
-                        return new Relation(array_merge($item, [
-                            'relationClass' => ModelClass::findOne($className),
-                        ]));
-                    }, \Yii::$app->request->post('relations', []))
-                );
+                if (\Yii::$app->request->post('refresh')) {
+                    $modelClass = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName));
+                    (new ModelGenerator([
+                        'oldModelClass' => $modelClass,
+                        'modelClass' => $modelClass,
+                        'migrateMode' => 'none',
+                    ]))->generate();
 
-                (new ModelGenerator([
-                    'oldModelClass' => ModelClass::findOne($modelClass->className),
-                    'modelClass' => $modelClass,
-                    'migrateMode' => \Yii::$app->request->post('migrateMode'),
-                ]))->generate();
+                    return $this->redirect(['index']);
+                } else {
+                    $modelClass = new ModelClass([
+                        'className' => ModelClass::idToClassName($moduleId, $modelName),
+                        'tableName' => \Yii::$app->request->post('tableName'),
+                    ]);
+                    $modelClass->getMetaClass()->setMeta(
+                        array_map(function ($item) use ($modelClass) {
+                            return new MetaItem(array_merge($item, [
+                                'metaClass' => $modelClass->getMetaClass(),
+                            ]));
+                        }, \Yii::$app->request->post('meta', []))
+                    );
+                    $modelClass->getMetaClass()->setRelations(
+                        array_map(function ($item) {
+                            $className = ArrayHelper::remove($item, 'relationModelClassName');
+                            return new Relation(array_merge($item, [
+                                'relationClass' => ModelClass::findOne($className),
+                            ]));
+                        }, \Yii::$app->request->post('relations', []))
+                    );
+
+                    (new ModelGenerator([
+                        'oldModelClass' => ModelClass::findOne($modelClass->className),
+                        'modelClass' => $modelClass,
+                        'migrateMode' => \Yii::$app->request->post('migrateMode'),
+                    ]))->generate();
+                }
 
                 return $this->redirect(['model', 'moduleId' => $moduleId, 'modelName' => $modelName]);
             }
@@ -149,18 +160,28 @@ class GiiController extends Controller
                     'className' => FormModelClass::idToClassName($moduleId, $formModelName),
                 ]);
                 $modelClass = ModelClass::findOne(\Yii::$app->request->post('modelClass'));
-                $formModelClass->getMetaClass()->setMeta(
-                    array_map(function ($item) use ($formModelClass) {
-                        return new MetaItem(array_merge($item, [
-                            'metaClass' => $formModelClass->getMetaClass(),
-                        ]));
-                    }, \Yii::$app->request->post('meta', []))
-                );
 
-                (new FormModelGenerator([
-                    'formModelClass' => $formModelClass,
-                    'modelClass' => $modelClass,
-                ]))->generate();
+                if (\Yii::$app->request->post('refresh')) {
+                    (new FormModelGenerator([
+                        'formModelClass' => $formModelClass,
+                        'modelClass' => $modelClass,
+                    ]))->generate();
+
+                    return $this->redirect(['index']);
+                } else {
+                    $formModelClass->getMetaClass()->setMeta(
+                        array_map(function ($item) use ($formModelClass) {
+                            return new MetaItem(array_merge($item, [
+                                'metaClass' => $formModelClass->getMetaClass(),
+                            ]));
+                        }, \Yii::$app->request->post('meta', []))
+                    );
+
+                    (new FormModelGenerator([
+                        'formModelClass' => $formModelClass,
+                        'modelClass' => $modelClass,
+                    ]))->generate();
+                }
 
                 return $this->redirect(['form-model', 'moduleId' => $moduleId, 'formModelName' => $formModelName]);
             }
@@ -192,17 +213,26 @@ class GiiController extends Controller
                 $enumClass = new EnumClass([
                     'className' => EnumClass::idToClassName($moduleId, $enumName),
                 ]);
-                $enumClass->getMetaClass()->setMeta(
-                    array_map(function ($item) use ($enumClass) {
-                        return new EnumMetaItem(array_merge($item, [
-                            'metaClass' => $enumClass->getMetaClass(),
-                        ]));
-                    }, \Yii::$app->request->post('meta', []))
-                );
 
-                (new EnumGenerator([
-                    'enumClass' => $enumClass,
-                ]))->generate();
+                if (\Yii::$app->request->post('refresh')) {
+                    (new EnumGenerator([
+                        'enumClass' => $enumClass,
+                    ]))->generate();
+
+                    return $this->redirect(['index']);
+                } else {
+                    $enumClass->getMetaClass()->setMeta(
+                        array_map(function ($item) use ($enumClass) {
+                            return new EnumMetaItem(array_merge($item, [
+                                'metaClass' => $enumClass->getMetaClass(),
+                            ]));
+                        }, \Yii::$app->request->post('meta', []))
+                    );
+
+                    (new EnumGenerator([
+                        'enumClass' => $enumClass,
+                    ]))->generate();
+                }
 
                 return $this->redirect(['enum', 'moduleId' => $moduleId, 'enumName' => $enumName]);
             }

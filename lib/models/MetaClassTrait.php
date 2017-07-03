@@ -260,7 +260,7 @@ trait MetaClassTrait
                 continue;
             }
 
-            if ($appType instanceof RelationType && !$appType->giiDbType($metaItem)) {
+            if ($appType instanceof RelationType && $metaItem->metaClass instanceof ModelMetaClass && !$appType->giiDbType($metaItem)) {
                 $relation = $metaItem->metaClass->getRelation($metaItem->relationName);
                 $properties[$metaItem->name] = $relation && !$relation->isHasOne ? '[]' : null;
             }

@@ -14,10 +14,10 @@ $import = [];
 $meta = $modelClass->metaClass->renderJsMeta('        ', $import);
 
 ?>
-import ModelMeta from 'extpoint-yii2/base/ModelMeta';
+import Model from 'extpoint-yii2/base/Model';
 <?= !empty($import) ? implode("\n", $import) . "\n" : '' ?>
 
-export default class <?= $modelClass->metaClass->name ?> extends ModelMeta {
+export default class <?= $modelClass->metaClass->name ?> extends Model {
 
     static className = '<?= str_replace('\\', '\\\\', $modelClass->className) ?>';
 

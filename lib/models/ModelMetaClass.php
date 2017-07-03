@@ -47,10 +47,10 @@ class ModelMetaClass extends ModelClass
                 /** @type Model $model */
                 $model = new $modelClass();
 
-                $modelMeta = $model::meta();
-                if ($modelMeta) {
+                $meta = $model::meta();
+                if ($meta) {
                     $this->_meta = [];
-                    foreach ($modelMeta as $name => $params) {
+                    foreach ($meta as $name => $params) {
                         $metaItem = new MetaItem([
                             'name' => $name,
                             'oldName' => $name,

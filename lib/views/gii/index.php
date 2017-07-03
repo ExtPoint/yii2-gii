@@ -22,7 +22,7 @@ foreach ($modules as $moduleId => $items) {
 
     <div class="row">
 
-        <div class="col-sm-4">
+        <div class="col-sm-6">
             <div class="panel panel-default">
                 <div class="panel-body">
                     <?= Html::a(
@@ -42,7 +42,20 @@ foreach ($modules as $moduleId => $items) {
                                 'format' => 'raw',
                                 'value' => function ($model) {
                                     /** @type ModelClass $model */
-                                    return Html::a($model->name, ['/gii/gii/model', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name]);
+                                    return Html::a($model->name, ['/gii/gii/model', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name])
+                                        . ' '
+                                        . Html::a(
+                                            '<span class="glyphicon glyphicon-refresh"></span>',
+                                            ['/gii/gii/model'],
+                                            [
+                                                'data-method' => 'post',
+                                                'data-params' => [
+                                                    'refresh' => 1,
+                                                    'moduleId' => $model->moduleClass->id,
+                                                    'modelName' => $model->name
+                                                ]
+                                            ]
+                                        );
                                 }
                             ],
                             'tableName',
@@ -59,7 +72,7 @@ foreach ($modules as $moduleId => $items) {
             </div>
         </div>
 
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <div class="panel panel-default">
                 <div class="panel-body">
                     <?= Html::a(
@@ -79,7 +92,20 @@ foreach ($modules as $moduleId => $items) {
                                 'format' => 'raw',
                                 'value' => function ($model) {
                                     /** @type FormModelClass $model */
-                                    return Html::a($model->name, ['/gii/gii/form-model', 'moduleId' => $model->moduleClass->id, 'formModelName' => $model->name]);
+                                    return Html::a($model->name, ['/gii/gii/form-model', 'moduleId' => $model->moduleClass->id, 'formModelName' => $model->name])
+                                        . ' '
+                                        . Html::a(
+                                            '<span class="glyphicon glyphicon-refresh"></span>',
+                                            ['/gii/gii/form-model'],
+                                            [
+                                                'data-method' => 'post',
+                                                'data-params' => [
+                                                    'refresh' => 1,
+                                                    'moduleId' => $model->moduleClass->id,
+                                                    'formModelName' => $model->name
+                                                ]
+                                            ]
+                                        );
                                 }
                             ],
                         ],
@@ -88,7 +114,7 @@ foreach ($modules as $moduleId => $items) {
             </div>
         </div>
 
-        <div class="col-sm-4">
+        <div class="col-sm-3">
             <div class="panel panel-default">
                 <div class="panel-body">
                     <?= Html::a(
@@ -108,7 +134,20 @@ foreach ($modules as $moduleId => $items) {
                                 'format' => 'raw',
                                 'value' => function ($model) {
                                     /** @type EnumClass $model */
-                                    return Html::a($model->name, ['/gii/gii/enum', 'moduleId' => $model->moduleClass->id, 'enumName' => $model->name]);
+                                    return Html::a($model->name, ['/gii/gii/enum', 'moduleId' => $model->moduleClass->id, 'enumName' => $model->name])
+                                        . ' '
+                                        . Html::a(
+                                            '<span class="glyphicon glyphicon-refresh"></span>',
+                                            ['/gii/gii/enum'],
+                                            [
+                                                'data-method' => 'post',
+                                                'data-params' => [
+                                                    'refresh' => 1,
+                                                    'moduleId' => $model->moduleClass->id,
+                                                    'enumName' => $model->name
+                                                ]
+                                            ]
+                                        );
                                 }
                             ]
                         ],

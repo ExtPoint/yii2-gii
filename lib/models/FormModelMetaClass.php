@@ -30,10 +30,10 @@ class FormModelMetaClass extends FormModelClass
         if (!$this->_meta) {
             /** @var FormModel $modelClass */
             $modelClass = $this->modelClass->className;
-            $modelMeta = $modelClass::meta();
-            if (!empty($modelMeta)) {
+            $meta = $modelClass::meta();
+            if (!empty($meta)) {
                 $this->_meta = [];
-                foreach ($modelMeta as $name => $params) {
+                foreach ($meta as $name => $params) {
                     $metaItem = new MetaItem([
                         'name' => $name,
                         'oldName' => $name,
