@@ -138,7 +138,6 @@ trait MetaClassTrait
     public static function exportRules($metaItems, $relations, &$useClasses = [])
     {
         $types = [];
-        $lengths = [];
         foreach ($metaItems as $metaItem) {
             $type = \Yii::$app->types->getType($metaItem->appType);
             if (!$type) {
@@ -157,11 +156,11 @@ trait MetaClassTrait
 
                 foreach ($attributes as $attribute) {
                     $types[$validatorRaw][] = $attribute;
-
-                    if ($metaItem->required) {
-                        $types["'required'"][] = $metaItem->name;
-                    }
                 }
+            }
+
+            if ($metaItem->required) {
+                $types["'required'"][] = $metaItem->name;
             }
         }
 

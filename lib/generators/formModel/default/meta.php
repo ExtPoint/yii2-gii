@@ -32,14 +32,13 @@ use <?= $relationClassName ?>;
 use <?= $modelClass->className ?>;
 <?php } ?>
 
-/**
-<?php foreach ($formModelClass->metaClass->phpDocProperties as $name => $phpDocType) { ?>
- * @property <?= "{$phpDocType} \${$name}\n" ?>
-<?php } ?>
- */
 abstract class <?= $formModelClass->metaClass->name ?> extends FormModel implements ISearchModelTrait
 {
     use SearchModelTrait;
+
+<?php foreach ($formModelClass->metaClass->metaWithChild as $metaItem) { ?>
+    public $<?= $metaItem->name ?>;
+<?php } ?>
 
 <?php if (count($formModelClass->metaClass->properties) > 0) { ?>
 <?php foreach ($formModelClass->metaClass->properties as $key => $value) { ?>

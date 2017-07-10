@@ -52,6 +52,11 @@ class GiiHelper
     {
         $code = Json::encode($var, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $code = str_replace("\n", "\n$indent", $code);
+        $code = str_replace("'", '\u0027', $code);
+        $code = str_replace('"', "'", $code);
+        $code = str_replace('\u0027', "'", $code);
+        $code = str_replace("'true'", "true", $code);
+        $code = str_replace("'false'", "false", $code);
         return $code;
     }
 }

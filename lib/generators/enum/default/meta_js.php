@@ -14,12 +14,12 @@ $labels = $enumClass->metaClass->renderJsLabels('        ');
 $cssClasses = $enumClass->metaClass->renderJsCssClasses('        ');
 
 ?>
-import EnumMeta from 'extpoint-yii2/base/EnumMeta';
+import Enum from 'extpoint-yii2/base/Enum';
 
-export default class <?= $enumClass->metaClass->name ?> extends EnumMeta {
+export default class <?= $enumClass->metaClass->name ?> extends Enum {
 
 <?php foreach ($enumClass->metaClass->meta as $enumMetaItem) { ?>
-    static <?= $enumMetaItem->constName ?> = '<?= $enumMetaItem->name ?>';
+    static <?= $enumMetaItem->constName ?> = <?= is_numeric($enumMetaItem->value) ? $enumMetaItem->value :  "'" . $enumMetaItem->value . "'" ?>;
 <?php } ?>
 
     static getLabels() {

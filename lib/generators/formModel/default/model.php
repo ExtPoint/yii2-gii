@@ -22,10 +22,17 @@ use <?= $formModelClass->metaClass->className ?>;
 
 class <?= $formModelClass->name ?> extends <?= $formModelClass->metaClass->name . "\n" ?>
 {
+    public function fields()
+    {
+        return [
+            '*',
+        ];
+    }
+
     /**
      * @param ActiveQuery $query
      */
-    protected function prepare($query)
+    public function prepare($query)
     {
     }
 }

@@ -4,6 +4,8 @@ namespace extpoint\yii2\gii\models;
 
 use extpoint\yii2\base\FormModel;
 use extpoint\yii2\base\Model;
+use extpoint\yii2\traits\ISearchModelTrait;
+use extpoint\yii2\traits\SearchModelTrait;
 
 /**
  * @property-read ModuleClass $moduleClass
@@ -57,6 +59,21 @@ class FormModelClass extends BaseClass
     /**
      * @return ModuleClass
      */
+    public function getModelClass()
+    {
+        $className = $this->className;
+        /** @var SearchModelTrait $instance */
+        $instance = new $className();
+        if ($instance instanceof ISearchModelTrait) {
+            $query = $instance->createQuery();
+            return $query ? $query->modelClass : null;
+        }
+        return null;
+    }
+
+    /**
+     * @return ModuleClass
+     */
     public function getModuleClass()
     {
         $namespace = substr($this->className, 0, strpos($this->className, '\\forms\\'));
@@ -86,6 +103,7 @@ class FormModelClass extends BaseClass
             'name',
             'moduleClass',
             'metaClass',
+            'modelClass',
         ];
     }
 

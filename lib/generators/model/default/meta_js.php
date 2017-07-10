@@ -15,7 +15,7 @@ $meta = $modelClass->metaClass->renderJsMeta('        ', $import);
 
 ?>
 import Model from 'extpoint-yii2/base/Model';
-<?= !empty($import) ? implode("\n", $import) . "\n" : '' ?>
+<?= !empty($import) ? implode("\n", array_unique($import)) . "\n" : '' ?>
 
 export default class <?= $modelClass->metaClass->name ?> extends Model {
 

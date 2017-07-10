@@ -138,6 +138,12 @@ class MetaItem extends Object implements Arrayable
     public $stringLength;
 
     /**
+     * Property of AddressType
+     * @var integer
+     */
+    public $addressType;
+
+    /**
      * @var string
      */
     public $subAppType;
