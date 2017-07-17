@@ -78,7 +78,7 @@ class EnumMetaClass extends EnumClass
     {
         $labels = [];
         foreach ($this->meta as $enumMetaItem) {
-            $labels[$enumMetaItem->value] = $enumMetaItem->label;
+            $labels[] = new ValueExpression('self::' . $enumMetaItem->getConstName() . ' => ' . GiiHelper::varExport($enumMetaItem->label));
         }
         return GiiHelper::varExport($labels, $indent);
     }
@@ -106,7 +106,7 @@ class EnumMetaClass extends EnumClass
         $cssClasses = [];
         foreach ($this->meta as $enumMetaItem) {
             if ($enumMetaItem->cssClass) {
-                $cssClasses[$enumMetaItem->value] = $enumMetaItem->cssClass;
+                $cssClasses[] = new ValueExpression('self::' . $enumMetaItem->getConstName() . ' => ' . GiiHelper::varExport($enumMetaItem->cssClass));
             }
         }
         return !empty($cssClasses) ? GiiHelper::varExport($cssClasses, $indent) : '';
@@ -118,7 +118,7 @@ class EnumMetaClass extends EnumClass
     public function getCustomColumns()
     {
         $columns = [];
-        if (!empty($this->meta)) {
+        if (!empty($this->meta) && is_array($this->meta[0]->customColumns)) {
             foreach ($this->meta[0]->customColumns as $name => $value) {
                 $columns[] = $name;
             }

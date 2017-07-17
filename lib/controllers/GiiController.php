@@ -159,7 +159,7 @@ class GiiController extends Controller
                 $formModelClass = new FormModelClass([
                     'className' => FormModelClass::idToClassName($moduleId, $formModelName),
                 ]);
-                $modelClass = ModelClass::findOne(\Yii::$app->request->post('modelClass'));
+                $modelClass = ModelClass::findOne(\Yii::$app->request->post('modelClass') ?: $formModelClass->getModelClass());
 
                 if (\Yii::$app->request->post('refresh')) {
                     (new FormModelGenerator([
