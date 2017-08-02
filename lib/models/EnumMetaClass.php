@@ -158,6 +158,22 @@ class EnumMetaClass extends EnumClass
         return !empty($lines) ? "{\n" . implode("\n", $lines) . "\n" . $indent . '}' : '';
     }
 
+    /**
+     * @param string $indent
+     * @return mixed|string
+     */
+    public function renderCustomColumnJs($name, $indent = '')
+    {
+        $lines = [];
+        foreach ($this->meta as $enumMetaItem) {
+            if (isset($enumMetaItem->customColumns[$name])) {
+                $lines[] = $indent . '    [this.' . strtoupper($enumMetaItem->name) . ']: '
+                    . '\'' . str_replace("'", "\\'", $enumMetaItem->customColumns[$name]) . '\',';
+            }
+        }
+        return !empty($lines) ? "{\n" . implode("\n", $lines) . "\n" . $indent . '}' : '';
+    }
+
     public function fields()
     {
         return [

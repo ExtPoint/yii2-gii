@@ -31,4 +31,17 @@ export default class <?= $enumClass->metaClass->name ?> extends Enum {
         return <?= $cssClasses ?>;
     }
 <?php } ?>
+<?php foreach ($enumClass->metaClass->getCustomColumns() as $columnName) { ?>
+
+    static get<?= ucfirst($columnName) ?>Data()
+    {
+        return <?= $enumClass->metaClass->renderCustomColumnJs($columnName, '        ') ?>;
+    }
+
+    static get<?= ucfirst($columnName) ?>(id)
+    {
+        const data = this.get<?= ucfirst($columnName) ?>Data();
+        return data[id] || null;
+    }
+<?php } ?>
 }
