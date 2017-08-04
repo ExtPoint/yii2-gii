@@ -97,7 +97,7 @@ class MigrationMethods extends Object
     {
         return empty($this->createTable) && empty($this->addColumn) && empty($this->alterColumn)
             && empty($this->alterColumn) && empty($this->alterColumnDown) && empty($this->renameColumn)
-            && empty($this->dropColumn) && empty($this->foreignKeys);
+            && empty($this->dropColumn) && empty($this->foreignKeys) && empty($this->junctionTables);
     }
 
     /**
