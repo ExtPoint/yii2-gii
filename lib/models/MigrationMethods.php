@@ -189,7 +189,37 @@ class MigrationMethods extends Object
                 $this->alterColumn[] = $metaItem;
                 $this->alterColumnDown[] = $oldMetaItem;
             }
+
+            $this->processPostgresItemRequiredState($oldMetaItem, $metaItem);
         }
+    }
+
+    /**
+     * Add single command if it's needed to change 'required' property on Postgres
+     *
+     * @param MetaItem $oldMetaItem
+     * @param MetaItem $newMetaItem
+     */
+    protected function processPostgresItemRequiredState($oldMetaItem, $newMetaItem)
+    {
+        if (!(\Yii::$app->db->getSchema() instanceof \yii\db\pgsql\Schema)) {
+            return;
+        }
+
+        // If 'required' property wasn't changed, then do not add no additional command
+        $oldItemIsRequired = $oldMetaItem->required !== null ?: false;
+        $newItemIsRequired = $newMetaItem->required !== null ?: false;
+        if ($oldItemIsRequired == $newItemIsRequired) {
+            return;
+        }
+
+        $oldMetaItemClone = clone $oldMetaItem;
+        $newMetaItemClone = clone $newMetaItem;
+
+        $oldMetaItemClone->renderPostgresNotNull = true;
+        $newMetaItemClone->renderPostgresNotNull = true;
+        $this->alterColumn[] = $newMetaItemClone;
+        $this->alterColumnDown[] = $oldMetaItemClone;
     }
 
     protected function processDropColumn()
