@@ -158,6 +158,8 @@ class MetaItem extends Object implements Arrayable
      */
     protected $_customProperties = [];
 
+    public $renderPostgresNotNull = false;
+
     /**
      * @param string $dbType
      * @return array|null
@@ -201,6 +203,12 @@ class MetaItem extends Object implements Arrayable
 
     public function renderMigrationColumnType()
     {
+        if ($this->renderPostgresNotNull) {
+            return $this->required
+                ? '\'SET NOT NULL\''
+                : '\'DROP NOT NULL\'';
+        }
+
         $map = [
             'pk' => 'primaryKey',
             'bigpk' => 'bigPrimaryKey',
@@ -225,8 +233,13 @@ class MetaItem extends Object implements Arrayable
         $parts = self::parseDbType($dbType);
 
         if (isset($map[$parts[0]])) {
+
             $arguments = count($parts) > 1 ? implode(', ', array_slice($parts, 1)) : '';
-            $notNull = $this->required ? '->notNull()' : '';
+
+            // 'required' property is handled separately for Postgres
+            $isPostgres = \Yii::$app->db->getSchema() instanceof \yii\db\pgsql\Schema;
+            $notNull =  $this->required && !$isPostgres ? '->notNull()' : '';
+
             $defaultValue = $this->defaultValue !== null && $this->defaultValue !== ''
                 ? '->defaultValue(' . (preg_match('/^[0-9]+$/', $this->defaultValue) ? $this->defaultValue : "'" . $this->defaultValue . "'") . ')'
                 : '';
