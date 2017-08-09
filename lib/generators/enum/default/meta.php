@@ -46,6 +46,7 @@ abstract class <?= $enumClass->metaClass->name ?> extends Enum
 
     public static function get<?= ucfirst($columnName) ?>($id)
     {
+        $data = static::get<?= ucfirst($columnName) ?>Data();
         return isset($data[$id]) ? $data[$id] : null;
     }
 <?php } ?>
