@@ -107,6 +107,11 @@ trait MetaClassTrait
                     continue;
                 }
 
+                // Skip service postgres-specific key
+                if ($key === 'renderPostgresNotNull') {
+                    continue;
+                }
+
                 // Skip null values
                 if ($value === '' || $value === null) {
                     continue;
