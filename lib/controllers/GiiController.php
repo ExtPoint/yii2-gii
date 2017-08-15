@@ -294,4 +294,49 @@ class GiiController extends Controller
         ]);
     }
 
+
+    public function actionGenericCrud($moduleId = null, $modelName = null)
+    {
+        $initialValues = [
+            'moduleId' => $moduleId,
+            'createActionIndex' => true,
+            'withSearch' => true,
+            'withDelete' => true,
+            'createActionCreate' => true,
+            'createActionUpdate' => true,
+            'createActionView' => true,
+        ];
+
+        if (\Yii::$app->request->isPost) {
+            $moduleId = \Yii::$app->request->post('moduleId');
+            $initialValues['moduleId'] = $moduleId;
+
+            $modelClassName = \Yii::$app->request->post('modelClassName');
+            $initialValues['modelClassName'] = $modelClassName;
+
+            $name = \Yii::$app->request->post('name');
+            $modelClass = ModelClass::findOne($modelClassName);
+            $initialValues = \Yii::$app->request->post();
+            unset($initialValues['_csrf']);
+
+            // Check to create module
+            if ($moduleId && !ModuleClass::findOne($moduleId)) {
+                (new ModuleGenerator([
+                    'moduleId' => $moduleId,
+                ]))->generate();
+            }
+
+            // Create CRUD
+            if ($moduleId && $name) {
+                (new CrudGenerator($initialValues))->generate();
+                return $this->redirect(['crud', 'moduleId' => $modelClass->moduleClass->id, 'modelName' => $modelClass->name]);
+            }
+        } else {
+            $initialValues['modelClassName'] = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName))->className;
+        }
+
+        return $this->render('generic-crud', [
+            'initialValues' => $initialValues,
+        ]);
+    }
 }
