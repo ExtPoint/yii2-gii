@@ -68,11 +68,11 @@ class <?= $migrationClass->name ?> extends Migration
 <?php foreach ($migrationMethods->dropColumn as $metaItem) { ?>
         $this->addColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
-<?php foreach ($migrationMethods->alterColumnDown as $metaItem) { ?>
-        $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
-<?php } ?>
 <?php foreach ($migrationMethods->renameColumn as $metaItem) { ?>
         $this->renameColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', '<?= $metaItem->oldName ?>');
+<?php } ?>
+<?php foreach ($migrationMethods->alterColumnDown as $metaItem) { ?>
+        $this->alterColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>', <?= $metaItem->renderMigrationColumnType() ?>);
 <?php } ?>
 <?php foreach ($migrationMethods->addColumn as $metaItem) { ?>
         $this->dropColumn('<?= $migrationMethods->modelClass->tableName ?>', '<?= $metaItem->name ?>');
