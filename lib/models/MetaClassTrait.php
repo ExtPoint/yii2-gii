@@ -6,6 +6,7 @@ use extpoint\yii2\base\Model;
 use extpoint\yii2\gii\helpers\GiiHelper;
 use extpoint\yii2\types\RelationType;
 use extpoint\yii2\types\StringType;
+use extpoint\yii2\validators\RecordExistValidator;
 use yii\db\ActiveQuery;
 use yii\db\Schema;
 use yii\helpers\ArrayHelper;
@@ -108,7 +109,7 @@ trait MetaClassTrait
                 }
 
                 // Skip service postgres-specific key
-                if ($key === 'renderPostgresNotNull') {
+                if ($key === 'customMigrationColumnType') {
                     continue;
                 }
 
@@ -188,9 +189,16 @@ trait MetaClassTrait
             $attribute = $relation->name;
             $refClassName = $relation->relationClass->name;
             $useClasses[] = $relation->relationClass->className;
+            $useClasses[] = RecordExistValidator::className();
             $targetAttributes = "'{$relation->selfKey}' => '{$relation->relationKey}'";
 
-            $rules[] = "['$attribute', 'exist', 'skipOnError' => true, 'targetClass' => $refClassName::className(), 'targetAttribute' => [$targetAttributes]]";
+            $rules[] = "[" . implode(', ', [
+                    "'$attribute'",
+                    "RecordExistValidator::className()",
+                    "'skipOnError' => true",
+                    "'targetClass' => $refClassName::className()",
+                    "'targetAttribute' => [$targetAttributes]",
+                ]) . "]";
         }
 
         return $rules;
