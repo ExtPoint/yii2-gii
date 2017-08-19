@@ -23,7 +23,7 @@ use extpoint\yii2\gii\helpers\GiiHelper;
     </td>
     <td>
         <code>
-            <?= $megaMenuItem->url ? GiiHelper::varExport($megaMenuItem->url) : '' ?>
+            <?= $megaMenuItem->url ? str_replace('0 => ', '', GiiHelper::varExport($megaMenuItem->normalizedUrl)) : '' ?>
         </code>
     </td>
     <td>

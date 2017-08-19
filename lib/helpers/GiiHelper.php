@@ -25,6 +25,9 @@ class GiiHelper
         if (in_array($var, ['true', 'false'])) {
             $type = 'boolean';
         }
+        if (is_int($var)) {
+            $type = 'int';
+        }
         if ($var instanceof ValueExpression) {
             return (string)$var;
         }

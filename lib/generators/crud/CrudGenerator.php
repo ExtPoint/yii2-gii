@@ -11,19 +11,10 @@ use yii\gii\Generator;
 
 class CrudGenerator extends Generator
 {
-    public $modelClassName;
-    public $moduleId;
-    public $name;
-    public $createActionIndex;
-    public $withSearch;
-    public $withDelete;
-    public $createActionCreate;
-    public $createActionUpdate;
-    public $createActionView;
-    public $title;
-    public $url;
-    public $roles;
-    public $requestFields;
+    /**
+     * @var ControllerClass
+     */
+    public $controllerClass;
 
     public function getName() {
         return 'crud';
@@ -31,7 +22,7 @@ class CrudGenerator extends Generator
 
     public function requiredTemplates()
     {
-        return ['search', 'controller'];
+        return ['controller', 'meta'];
     }
 
     /**
@@ -39,99 +30,25 @@ class CrudGenerator extends Generator
      */
     public function generate()
     {
-        $moduleClass = ModuleClass::findOne(ModuleClass::idToClassName($this->moduleId));
-
-        $modelClass = ModelClass::findOne($this->modelClassName);
-        $controllerClass = new ControllerClass([
-            'className' => $moduleClass->namespace . '\\controllers\\' . ucfirst($this->name) . 'Controller',
-            'title' => $this->title,
-            'url' => $this->url,
-            'requestFields' => $this->requestFields,
-            'roles' => $this->roles,
-        ]);
-        $searchModelClass = new SearchModelClass([
-            'className' => $moduleClass->namespace . '\\forms\\' . $modelClass->name . 'Search',
-            'modelClass' => $modelClass,
-        ]);
-
-        // Check CRUD is already exists
-        if (file_exists($controllerClass->filePath)) {
-            \Yii::$app->session->addFlash('danger', 'Контроллер ' . $controllerClass->name . ' уже существует!');
-            return;
-        }
-
-        // Create controller
+        // Create/update meta information
         (new CodeFile(
-            $controllerClass->filePath,
-            $this->render('controller.php', [
-                'modelClass' => $modelClass,
-                'controllerClass' => $controllerClass,
-                'searchModelClass' => $searchModelClass,
-                'createActionIndex' => $this->createActionIndex,
-                'withSearch' => $this->withSearch,
-                'withDelete' => $this->withDelete,
-                'createActionCreate' => $this->createActionCreate,
-                'createActionUpdate' => $this->createActionUpdate,
-                'createActionView' => $this->createActionView,
+            $this->controllerClass->metaClass->filePath,
+            $this->render('meta.php', [
+                'controllerClass' => $this->controllerClass,
             ])
         ))->save();
-        \Yii::$app->session->addFlash('success', 'Создан контроллер ' . ucfirst($this->name) . 'Controller');
+        \Yii::$app->session->addFlash('success', 'Мета информция controller ' . $this->controllerClass->metaClass->name . ' обновлена');
 
-        // Create search model
-        if ($this->createActionIndex && $this->withSearch && !file_exists($searchModelClass->filePath)) {
+        // Create controller, if not exists
+        if (!file_exists($this->controllerClass->filePath)) {
             (new CodeFile(
-                $searchModelClass->filePath,
-                $this->render('search.php', [
-                    'modelClass' => $modelClass,
-                    'searchModelClass' => $searchModelClass,
+                $this->controllerClass->filePath,
+                $this->render('controller.php', [
+                    'controllerClass' => $this->controllerClass,
                 ])
             ))->save();
-            \Yii::$app->session->addFlash('success', 'Создана модель поиска ' . $searchModelClass->name);
+            \Yii::$app->session->addFlash('success', 'Добавлен controller ' . $this->controllerClass->name);
         }
-
-        // Create views
-        $templateNames = [
-            'index' => $this->createActionIndex,
-            'update' => $this->createActionCreate || $this->createActionUpdate,
-            'view' => $this->createActionView,
-        ];
-        foreach ($templateNames as $templateName => $doCreate) {
-            if (!$doCreate) {
-                continue;
-            }
-
-            (new CodeFile(
-                $moduleClass->folderPath . '/views/' . $controllerClass->id . '/' . $templateName . '.php',
-                $this->render('views/' . $templateName . '.php', [
-                    'modelClass' => $modelClass,
-                    'controllerClass' => $controllerClass,
-                    'searchModelClass' => $searchModelClass,
-                    'createActionIndex' => $this->createActionIndex,
-                    'withSearch' => $this->withSearch,
-                    'withDelete' => $this->withDelete,
-                    'createActionCreate' => $this->createActionCreate,
-                    'createActionUpdate' => $this->createActionUpdate,
-                    'createActionView' => $this->createActionView,
-                ])
-            ))->save();
-
-            \Yii::$app->session->addFlash('success', 'Создано представление ' . $templateName);
-        }
-
-        \Yii::$app->session->addFlash('info', 'Не забудьте добавить ' . $controllerClass->name . '::coreMenuItems() в ваше меню!');
     }
 
-    public function getGridViewActions() {
-        $actions = [];
-        if ($this->createActionView) {
-            $actions[] = 'view';
-        }
-        if ($this->createActionCreate || $this->createActionUpdate) {
-            $actions[] = 'update';
-        }
-        if ($this->withDelete) {
-            $actions[] = 'delete';
-        }
-        return $actions;
-    }
 }

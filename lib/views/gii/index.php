@@ -22,7 +22,7 @@ foreach ($modules as $moduleId => $items) {
 
     <div class="row">
 
-        <div class="col-sm-6">
+        <div class="col-sm-3">
             <div class="panel panel-default">
                 <div class="panel-body">
                     <?= Html::a(
@@ -58,14 +58,49 @@ foreach ($modules as $moduleId => $items) {
                                         );
                                 }
                             ],
-                            'tableName',
+                            'tableName'
+                        ],
+                    ]) ?>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-body">
+                    <?= Html::a(
+                        '<span class="glyphicon glyphicon-plus"></span>',
+                        ['crud', 'moduleId' => $moduleId],
+                        [
+                            'class' => 'btn btn-xs btn-default',
+                            'style' => 'position: absolute; top: 23px; right: 32px;',
+                        ]
+                    ) ?>
+                    <?= GridView::widget([
+                        'dataProvider' => new ArrayDataProvider(['allModels' => !empty($items['cruds']) ? $items['cruds'] : []]),
+                        'emptyText' => '',
+                        'columns' => [
                             [
+                                'label' => 'CRUD',
                                 'format' => 'raw',
                                 'value' => function ($model) {
-                                    /** @type ModelClass $model */
-                                    return Html::a('<span class="glyphicon glyphicon-plus"></span> CRUD', ['/gii/gii/crud', 'moduleId' => $model->moduleClass->id, 'modelName' => $model->name]);
+                                    /** @type FormModelClass $model */
+                                    return Html::a($model->name, ['/gii/gii/crud', 'moduleId' => $model->moduleClass->id, 'controllerName' => $model->name])
+                                        . ' '
+                                        . Html::a(
+                                            '<span class="glyphicon glyphicon-refresh"></span>',
+                                            ['/gii/gii/crud'],
+                                            [
+                                                'data-method' => 'post',
+                                                'data-params' => [
+                                                    'refresh' => 1,
+                                                    'moduleId' => $model->moduleClass->id,
+                                                    'controllerName' => $model->name
+                                                ]
+                                            ]
+                                        );
                                 }
-                            ]
+                            ],
                         ],
                     ]) ?>
                 </div>

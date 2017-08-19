@@ -2,10 +2,12 @@
 
 namespace extpoint\yii2\gii\models;
 
+use extpoint\yii2\base\CrudController;
 use yii\helpers\Inflector;
 
 /**
  * @property-read ModuleClass $moduleClass
+ * @property-read ControllerMetaClass $metaClass
  * @property-read string $id
  * @property-read string $routePrefix
  * @property-read string[] $requestFieldsArray
@@ -26,12 +28,46 @@ class ControllerClass extends BaseClass
     /**
      * @var string
      */
-    public $requestFields;
+    public $roles;
+
+    private static $_controllers;
+    private $_metaClass;
+
+    public static function idToClassName($moduleId, $modelName = null) {
+        return 'app\\' . str_replace('.', '\\', $moduleId) . '\\controllers\\' . ucfirst($modelName);
+    }
 
     /**
-     * @var string
+     * @return ControllerClass[]
      */
-    public $roles;
+    public static function findAll()
+    {
+        if (self::$_controllers === null) {
+            self::$_controllers = [];
+
+            foreach (self::findFiles('controllers') as $path => $className) {
+                if (is_subclass_of($className, CrudController::className())) {
+                    self::$_controllers[] = new ControllerClass([
+                        'className' => $className,
+                    ]);
+                }
+            }
+        }
+        return self::$_controllers;
+    }
+
+    /**
+     * @param string $className
+     * @return ControllerClass|null
+     */
+    public static function findOne($className) {
+        foreach (static::findAll() as $modelClass) {
+            if ($modelClass->className === $className) {
+                return $modelClass;
+            }
+        }
+        return null;
+    }
 
     /**
      * @return ModuleClass
@@ -42,8 +78,27 @@ class ControllerClass extends BaseClass
         $id = str_replace('\\', '.', preg_replace('/^app\\\\/', '', $namespace));
 
         return new ModuleClass([
-            'className' => self::idToClassName($id),
+            'className' => ModuleClass::idToClassName($id),
         ]);
+    }
+
+    /**
+     * @return ControllerMetaClass
+     */
+    public function getMetaClass() {
+        if ($this->_metaClass === null) {
+            $this->_metaClass = new ControllerMetaClass([
+                'className' => $this->getNamespace() . '\\meta\\' . $this->getName() . 'Meta',
+                'controllerClass' => $this,
+            ]);
+
+            if (class_exists($this->_metaClass->className)) {
+                /** @var CrudController $metaClass */
+                $metaClass = $this->_metaClass->className;
+                $this->_metaClass->setMeta($metaClass::meta());
+            }
+        }
+        return $this->_metaClass;
     }
 
     public function getId() {
@@ -55,39 +110,13 @@ class ControllerClass extends BaseClass
         return "/$modulePrefix/{$this->id}";
     }
 
-    public function getRequestFieldsArray() {
-        return preg_split('/[^\s-_]+/', $this->requestFields, -1, PREG_SPLIT_NO_EMPTY);
-    }
-
-    public function getRolesArray() {
-        return preg_split('/[^\w\d@*-_]+/', $this->roles, -1, PREG_SPLIT_NO_EMPTY);
-    }
-
-    public function renderRoute($action, $params = []) {
-        $requestParams = [];
-        foreach ($this->requestFieldsArray as $key) {
-            $requestParams[] = "'$key' => \$$key";
-        }
-        foreach ($params as $key => $value) {
-            $requestParams[] = "'$key' => $value";
-        }
-        return "['$action'" . (count($requestParams) > 0 ? ', ' . implode(', ', $requestParams) : '') . ']';
-    }
-
-    public function renderActionArguments($names = []) {
-        $arguments = [];
-        foreach (array_merge($this->requestFieldsArray, $names) as $key) {
-            $arguments[] = "\$$key";
-        }
-        return implode(', ', $arguments);
-    }
-
-    public function renderRoles() {
-        if (count($this->rolesArray) === 1) {
-            return "'{$this->rolesArray[0]}'";
-        }
-
-        return "['" . implode("', '", $this->rolesArray) . "']";
+    public function fields() {
+        return [
+            'className',
+            'name',
+            'moduleClass',
+            'metaClass',
+        ];
     }
 
 }

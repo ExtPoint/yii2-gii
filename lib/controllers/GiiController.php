@@ -9,6 +9,7 @@ use extpoint\yii2\gii\generators\crud\CrudGenerator;
 use extpoint\yii2\gii\generators\module\ModuleGenerator;
 use extpoint\yii2\base\Controller;
 use extpoint\yii2\gii\GiiModule;
+use extpoint\yii2\gii\models\ControllerClass;
 use extpoint\yii2\gii\models\EnumClass;
 use extpoint\yii2\gii\models\EnumMetaItem;
 use extpoint\yii2\gii\models\FormModelClass;
@@ -68,6 +69,9 @@ class GiiController extends Controller
         }
         foreach (EnumClass::findAll() as $enumClass) {
             $modules[$enumClass->moduleClass->id]['enums'][] = $enumClass;
+        }
+        foreach (ControllerClass::findAll() as $controllerClass) {
+            $modules[$controllerClass->moduleClass->id]['cruds'][] = $controllerClass;
         }
 
         ksort($modules);
@@ -249,29 +253,14 @@ class GiiController extends Controller
         ]);
     }
 
-    public function actionCrud($moduleId = null, $modelName = null)
+    public function actionCrud($moduleId = null, $controllerName = null)
     {
-        $initialValues = [
-            'moduleId' => $moduleId,
-            'createActionIndex' => true,
-            'withSearch' => true,
-            'withDelete' => true,
-            'createActionCreate' => true,
-            'createActionUpdate' => true,
-            'createActionView' => true,
-        ];
-
         if (\Yii::$app->request->isPost) {
             $moduleId = \Yii::$app->request->post('moduleId');
-            $initialValues['moduleId'] = $moduleId;
-
-            $modelClassName = \Yii::$app->request->post('modelClassName');
-            $initialValues['modelClassName'] = $modelClassName;
-
-            $name = \Yii::$app->request->post('name');
-            $modelClass = ModelClass::findOne($modelClassName);
-            $initialValues = \Yii::$app->request->post();
-            unset($initialValues['_csrf']);
+            $controllerName = \Yii::$app->request->post('controllerName');
+            if ($controllerName && !preg_match('/Controller$/', $controllerName)) {
+                $controllerName = ucfirst($controllerName) . 'Controller';
+            }
 
             // Check to create module
             if ($moduleId && !ModuleClass::findOne($moduleId)) {
@@ -281,16 +270,38 @@ class GiiController extends Controller
             }
 
             // Create CRUD
-            if ($moduleId && $name) {
-                (new CrudGenerator($initialValues))->generate();
-                return $this->redirect(['crud', 'moduleId' => $modelClass->moduleClass->id, 'modelName' => $modelClass->name]);
+            if ($moduleId && $controllerName) {
+                $controllerClassName = ControllerClass::idToClassName($moduleId, $controllerName);
+                $controllerClass = ControllerClass::findOne($controllerClassName);
+                if (!$controllerClass) {
+                    $controllerClass = new ControllerClass([
+                        'className' => $controllerClassName,
+                    ]);
+                }
+
+                if (\Yii::$app->request->post('refresh')) {
+                    (new CrudGenerator([
+                        'controllerClass' => $controllerClass,
+                    ]))->generate();
+
+                    return $this->redirect(['index']);
+                } else {
+                    $controllerClass->getMetaClass()->setMeta(\Yii::$app->request->post('meta'));
+
+                    (new CrudGenerator([
+                        'controllerClass' => $controllerClass,
+                    ]))->generate();
+                }
+
+                return $this->redirect(['crud', 'moduleId' => $moduleId, 'controllerName' => $controllerName]);
             }
-        } else {
-            $initialValues['modelClassName'] = ModelClass::findOne(ModelClass::idToClassName($moduleId, $modelName))->className;
         }
 
         return $this->render('crud', [
-            'initialValues' => $initialValues,
+            'initialValues' => [
+                'moduleId' => $moduleId,
+                'controllerName' => $controllerName,
+            ],
         ]);
     }
 

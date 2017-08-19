@@ -1,12 +1,14 @@
 <?php
 
-namespace extpoint\yii2\gii\widgets\CrudFrom;
+namespace extpoint\yii2\gii\widgets\CrudForm;
 
 use extpoint\yii2\base\Widget;
+use extpoint\yii2\gii\models\ControllerClass;
+use extpoint\yii2\gii\models\FormModelClass;
 use extpoint\yii2\gii\models\ModelClass;
 use extpoint\yii2\gii\models\ModuleClass;
 
-class CrudFrom extends Widget
+class CrudForm extends Widget
 {
     public $initialValues;
 
@@ -22,14 +24,9 @@ class CrudFrom extends Widget
                     'className' => $moduleClass->className,
                 ];
             }, ModuleClass::findAll()),
-            'models' => array_map(function($modelClass) {
-                /** @type ModelClass $modelClass */
-                return [
-                    'className' => $modelClass->className,
-                    'name' => $modelClass->name,
-                    'moduleId' => $modelClass->moduleClass->id,
-                ];
-            }, ModelClass::findAll()),
+            'models' => ModelClass::findAll(),
+            'formModels' => FormModelClass::findAll(),
+            'controllers' => ControllerClass::findAll(),
         ]);
     }
 
