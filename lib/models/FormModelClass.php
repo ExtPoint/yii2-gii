@@ -62,7 +62,7 @@ class FormModelClass extends BaseClass
     public function getModelClass()
     {
         $className = $this->className;
-        if ($className) {
+        if (class_exists($className)) {
             /** @var SearchModelTrait $instance */
             $instance = new $className();
             if ($instance instanceof ISearchModelTrait) {
