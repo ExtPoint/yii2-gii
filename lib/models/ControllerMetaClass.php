@@ -145,7 +145,9 @@ class ControllerMetaClass extends ControllerClass
                     break;
 
                 case 'roles':
-                    $this->$key = preg_split('/[^\w\d@*-_]+/', $value, -1, PREG_SPLIT_NO_EMPTY);
+                    $this->$key = is_string($value)
+                        ? preg_split('/[^\w\d@*-_]+/', $value, -1, PREG_SPLIT_NO_EMPTY)
+                        : $value;
                     if (empty($this->$key)) {
                         $this->$key = null;
                     }
