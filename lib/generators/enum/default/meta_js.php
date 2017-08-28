@@ -16,6 +16,8 @@ $cssClasses = $enumClass->metaClass->renderJsCssClasses('        ');
 ?>
 import Enum from 'extpoint-yii2/base/Enum';
 
+import {locale} from 'components';
+
 export default class <?= $enumClass->metaClass->name ?> extends Enum {
 
 <?php foreach ($enumClass->metaClass->meta as $enumMetaItem) { ?>

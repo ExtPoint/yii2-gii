@@ -4,6 +4,7 @@ namespace extpoint\yii2\gii\models;
 
 use extpoint\yii2\base\Enum;
 use extpoint\yii2\gii\helpers\GiiHelper;
+use yii\helpers\Json;
 
 /**
  * @property EnumMetaItem[] $meta
@@ -78,7 +79,9 @@ class EnumMetaClass extends EnumClass
     {
         $labels = [];
         foreach ($this->meta as $enumMetaItem) {
-            $labels[] = new ValueExpression('self::' . $enumMetaItem->getConstName() . ' => ' . GiiHelper::varExport($enumMetaItem->label));
+            $labels[] = new ValueExpression(
+                'self::' . $enumMetaItem->getConstName() . ' => Yii::t(\'app\', ' . GiiHelper::varExport($enumMetaItem->label) . ')'
+            );
         }
         return GiiHelper::varExport($labels, $indent);
     }
@@ -92,7 +95,7 @@ class EnumMetaClass extends EnumClass
         $lines = [];
         foreach ($this->meta as $enumMetaItem) {
             $lines[] = $indent . '    [this.' . strtoupper($enumMetaItem->name) . ']: '
-                . '\'' . str_replace("'", "\\'", $enumMetaItem->label) . '\',';
+                . 'locale.t(' . GiiHelper::varExport($enumMetaItem->label) . '),';
         }
         return "{\n" . implode("\n", $lines) . "\n" . $indent . '}';
     }

@@ -69,11 +69,28 @@ trait MetaClassTrait
      */
     public function renderJsMeta($indent = '', &$import = [])
     {
+        $requireLocale = false;
+
         $result = [];
         foreach (static::exportMeta($this->meta) as $name => $item) {
             $metaItem = $this->getMetaItem($name);
             $type = \Yii::$app->types->getType($metaItem->appType);
-            $result[$metaItem->name] = $type->getGiiJsMetaItem($metaItem, $item, $import);
+            $jsItem = $type->getGiiJsMetaItem($metaItem, $item, $import);
+
+            foreach (['label', 'hint'] as $key) {
+                if (!empty($jsItem[$key])) {
+                    $jsItem[$key] = GiiHelper::varExport($jsItem[$key]);
+                    $jsItem[$key] = str_replace('"', '\\"', $jsItem[$key]);
+                    $jsItem[$key] = new JsExpression('locale.t(' . $jsItem[$key] . ')');
+                    $requireLocale = true;
+                }
+            }
+
+            $result[$metaItem->name] = $jsItem;
+        }
+
+        if ($requireLocale) {
+            $import[] = 'import {locale} from \'components\';';
         }
 
         return GiiHelper::varJsExport($result, $indent);
@@ -116,6 +133,12 @@ trait MetaClassTrait
                 // Skip null values
                 if ($value === '' || $value === null) {
                     continue;
+                }
+
+                // Localization
+                if (in_array($key, ['label', 'hint'])) {
+                    $value = new ValueExpression('Yii::t(\'app\', ' . GiiHelper::varExport($value) . ')');
+                    $useClasses[] = '\Yii';
                 }
 
                 if ($key === 'enumClassName') {

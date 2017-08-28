@@ -18,6 +18,7 @@ echo "<?php\n";
 
 namespace <?= $enumClass->metaClass->namespace ?>;
 
+use Yii;
 use extpoint\yii2\base\Enum;
 
 abstract class <?= $enumClass->metaClass->name ?> extends Enum
