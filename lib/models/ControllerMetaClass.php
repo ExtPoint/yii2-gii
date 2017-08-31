@@ -212,6 +212,12 @@ class ControllerMetaClass extends ControllerClass
             }
         }
 
+        foreach (['title'] as $key) {
+            if (!empty($meta[$key])) {
+                $meta[$key] = new ValueExpression('Yii::t(\'app\', ' . GiiHelper::varExport($meta[$key]) . ')');
+            }
+        }
+
         return GiiHelper::varExport($meta, $indent);
     }
 

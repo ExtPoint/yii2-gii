@@ -59,7 +59,17 @@ trait MetaClassTrait
      */
     public function renderMeta($indent = '', &$useClasses = [])
     {
-        return GiiHelper::varExport(static::exportMeta($this->meta, $useClasses), $indent);
+        $meta = static::exportMeta($this->meta, $useClasses);
+        foreach ($meta as $name => $item) {
+            foreach ($item as $key => $value) {
+                // Localization
+                if (in_array($key, ['label', 'hint'])) {
+                    $meta[$name][$key] = new ValueExpression('Yii::t(\'app\', ' . GiiHelper::varExport($value) . ')');
+                    $useClasses[] = '\Yii';
+                }
+            }
+        }
+        return GiiHelper::varExport($meta, $indent);
     }
 
     /**
@@ -133,12 +143,6 @@ trait MetaClassTrait
                 // Skip null values
                 if ($value === '' || $value === null) {
                     continue;
-                }
-
-                // Localization
-                if (in_array($key, ['label', 'hint'])) {
-                    $value = new ValueExpression('Yii::t(\'app\', ' . GiiHelper::varExport($value) . ')');
-                    $useClasses[] = '\Yii';
                 }
 
                 if ($key === 'enumClassName') {
