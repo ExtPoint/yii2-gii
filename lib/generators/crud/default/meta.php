@@ -18,6 +18,7 @@ echo "<?php\n";
 
 namespace <?= $controllerClass->metaClass->namespace ?>;
 
+use Yii;
 use extpoint\yii2\base\CrudController;
 <?php foreach (array_unique($useClasses) as $relationClassName) { ?>
 use <?= $relationClassName ?>;
