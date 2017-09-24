@@ -31,7 +31,7 @@ class ModelClass extends BaseClass
             foreach (self::findFiles('models') as $path => $className) {
                 /** @type Model $model */
                 $info = new \ReflectionClass($className);
-                if ($info->isAbstract()) {
+                if ($info->isAbstract() || !$info->getConstructor()) {
                     continue;
                 }
 
