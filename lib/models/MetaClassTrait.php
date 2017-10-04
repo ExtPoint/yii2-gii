@@ -207,9 +207,22 @@ trait MetaClassTrait
             $rules[] = "[$attributesRaw, $validatorRaw]";
         }
 
+        $primaryKey = null;
+
+        foreach ($metaItems as $metaItem) {
+            /** @var MetaItem $metaItem */
+            if ($metaItem->appType === 'primaryKey') {
+                $primaryKey = $metaItem->name;
+            }
+        }
+
         // Exist rules for foreign keys
         foreach ($relations as $relation) {
-            if (!$relation->isHasOne) {
+
+            // Checking for existence of the relations with self key == primary key might fail when run on save
+            $isSelfExistCheck = $primaryKey !== null && $relation->type === 'hasOne' && $relation->selfKey === $primaryKey;
+
+            if (!$relation->isHasOne || $isSelfExistCheck) {
                 continue;
             }
 
