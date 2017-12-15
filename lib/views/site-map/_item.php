@@ -44,7 +44,7 @@ use extpoint\yii2\gii\helpers\GiiHelper;
         ?>
         <?= implode(', ', $access) ?>
     </td>
-    <td class="<?= $megaMenuItem->visible ? 'text-success' : 'text-danger' ?>">
+    <td class="<?= $megaMenuItem->getVisible() ? 'text-success' : 'text-danger' ?>">
         <?= \Yii::$app->formatter->asBoolean($megaMenuItem->visible) ?>
     </td>
     <td>

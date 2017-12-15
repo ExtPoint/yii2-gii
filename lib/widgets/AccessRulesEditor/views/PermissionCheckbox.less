@@ -1,0 +1,27 @@
+@state-info-bg: #d9edf7;
+
+.@{bem-namespace}PermissionCheckbox {
+  &__checkbox {
+    display: inline-block;
+
+    &, > label {
+      width: 45px;
+      height: 30px;
+    }
+
+    > label {
+      text-align: center;
+      cursor: pointer;
+
+      &:hover {
+        background-color: @state-info-bg;
+      }
+
+      > input {
+        margin-top: 9px;
+        cursor: pointer;
+      }
+    }
+  }
+
+}

@@ -61,7 +61,8 @@ class ModelClass extends BaseClass
      * @param string $className
      * @return ModelClass|null
      */
-    public static function findOne($className) {
+    public static function findOne($className)
+    {
         foreach (static::findAll() as $modelClass) {
             if ($modelClass->className === $className) {
                 return $modelClass;
@@ -73,14 +74,16 @@ class ModelClass extends BaseClass
     /**
      * @return bool
      */
-    public function isFileMetaExists() {
+    public function isFileMetaExists()
+    {
         return file_exists($this->getMetaClass()->getFilePath());
     }
 
     /**
      * @return ModelMetaClass
      */
-    public function getMetaClass() {
+    public function getMetaClass()
+    {
         if ($this->_metaClass === null) {
             $this->_metaClass = new ModelMetaClass([
                 'className' => $this->getNamespace() . '\\meta\\' . $this->getName() . 'Meta',
@@ -103,13 +106,28 @@ class ModelClass extends BaseClass
         ]);
     }
 
-    public function getRequestParamName() {
+    public function getRequestParamName()
+    {
         /** @var Model $className */
         $className = $this->className;
         return $className::getRequestParamName();
     }
 
-    public function fields() {
+    public function getCanRules()
+    {
+        $names = [];
+        $info = new \ReflectionClass($this->className);
+        foreach ($info->getMethods() as $method) {
+            if ($method->isPublic() && $method->getNumberOfRequiredParameters() === 1
+                && strpos($method->name, 'can') === 0 && $method->getParameters()[0]->name === 'user') {
+                $names[] = lcfirst(substr($method->name, 3));
+            }
+        }
+        return $names;
+    }
+
+    public function fields()
+    {
         return [
             'className',
             'name',
