@@ -33,22 +33,22 @@ class GiiController extends Controller
                 'accessCheck' => [GiiModule::className(), 'accessCheck'],
                 'visible' => YII_ENV_DEV,
                 'items' => [
-                    [
+                    'model' => [
                         'label' => 'Модель',
                         'url' => ['/gii/gii/model'],
                         'urlRule' => 'admin/gii/model',
                     ],
-                    [
+                    'form-model' => [
                         'label' => 'Форма',
                         'url' => ['/gii/gii/form-model'],
                         'urlRule' => 'admin/gii/form-model',
                     ],
-                    [
+                    'enum' => [
                         'label' => 'Enum',
                         'url' => ['/gii/gii/enum'],
                         'urlRule' => 'admin/gii/enum',
                     ],
-                    [
+                    'crud' => [
                         'label' => 'CRUD',
                         'url' => ['/gii/gii/crud'],
                         'urlRule' => 'admin/gii/crud',

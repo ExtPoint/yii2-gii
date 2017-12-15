@@ -4,6 +4,7 @@ namespace extpoint\yii2\gii\controllers;
 
 use extpoint\megamenu\MegaMenuItem;
 use extpoint\yii2\base\Controller;
+use extpoint\yii2\components\AuthManager;
 use extpoint\yii2\gii\GiiModule;
 use extpoint\yii2\gii\models\AuthPermissionSync;
 use extpoint\yii2\gii\models\ModelClass;
@@ -43,13 +44,13 @@ class AccessController extends Controller
     public function actionModels()
     {
         AuthPermissionSync::syncModels();
-        return $this->_actionEditor(AuthPermissionSync::PREFIX_MODEL);
+        return $this->_actionEditor(AuthManager::RULE_PREFIX_MODEL);
     }
 
     public function actionActions()
     {
         AuthPermissionSync::syncActions();
-        return $this->_actionEditor(AuthPermissionSync::PREFIX_ACTION);
+        return $this->_actionEditor(AuthManager::RULE_PREFIX_ACTION);
     }
 
     public function _actionEditor($prefix)
@@ -64,6 +65,7 @@ class AccessController extends Controller
         return $this->render('editor', [
             'editorConfig' => [
                 'prefix' => $prefix,
+                'enableInlineMode' => $prefix === AuthManager::RULE_PREFIX_MODEL,
             ],
         ]);
     }

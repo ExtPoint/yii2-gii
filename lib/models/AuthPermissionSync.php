@@ -14,7 +14,12 @@ class AuthPermissionSync extends Object
     const PREFIX_MODEL = 'm';
     const PREFIX_ACTION = 'a';
 
-    static $defaultAttributeRules = ['create', 'update', 'view'];
+    static $defaultAttributeRules = [
+        AuthManager::RULE_MODEL_VIEW,
+        AuthManager::RULE_MODEL_CREATE,
+        AuthManager::RULE_MODEL_UPDATE,
+    ];
+    static $readOnlyTypes = ['autoTime', 'primaryKey'];
 
     /**
      * Return permissions list, filtered by prefix
@@ -106,6 +111,11 @@ class AuthPermissionSync extends Object
 
                 // Attribute rules
                 foreach (self::$defaultAttributeRules as $rule) {
+                    if (in_array($metaItem->appType, static::$readOnlyTypes)
+                        && in_array($rule, [AuthManager::RULE_MODEL_CREATE, AuthManager::RULE_MODEL_UPDATE])) {
+                        continue;
+                    }
+
                     $rulePermission = self::findOrCreate([
                         self::PREFIX_MODEL,
                         $modelClass->className,
@@ -152,6 +162,11 @@ class AuthPermissionSync extends Object
     protected static function syncActionsRecursive($items, &$addedNames, $parentPermission = null, $parentIds = [])
     {
         foreach ($items as $id => $item) {
+            // Skip extpoint/yii2-gii module
+            if ($parentPermission && $parentPermission->name === 'admin' && $id === 'gii') {
+                continue;
+            }
+
             $ids = array_merge($parentIds, [$id]);
 
             // Find or create permission

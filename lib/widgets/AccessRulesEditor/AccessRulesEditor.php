@@ -11,6 +11,7 @@ use yii\rbac\Permission;
 class AccessRulesEditor extends Widget
 {
     public $prefix;
+    public $enableInlineMode;
 
     public function init()
     {
@@ -43,6 +44,7 @@ class AccessRulesEditor extends Widget
         echo $this->renderReact([
             'csrfToken' => \Yii::$app->request->csrfToken,
             'roles' => $roles,
+            'enableInlineMode' => $this->enableInlineMode,
             'permissions' => array_map(function (Permission $permission) use ($auth) {
                 $children = array_values(ArrayHelper::getColumn($auth->getChildren($permission->name), 'name'));
                 return [
