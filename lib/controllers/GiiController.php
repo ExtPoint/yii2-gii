@@ -237,7 +237,10 @@ class GiiController extends Controller
                             }
 
                             $lineItems = explode(' ', $line);
-                            $key = array_shift($inlineList);
+                            if (count($lineItems) < 2) {
+                                continue;
+                            }
+                            $key = array_shift($lineItems);
                             $label = implode(' ', $lineItems);
 
                             if ($key) {
