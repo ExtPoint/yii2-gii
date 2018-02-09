@@ -225,6 +225,40 @@ class GiiController extends Controller
 
                     return $this->redirect(['index']);
                 } else {
+                    $meta = \Yii::$app->request->post('meta', []);
+
+                    // Inline
+                    $inlineList = \Yii::$app->request->post('inlineList');
+                    if ($inlineList) {
+                        foreach (explode('\n', $inlineList) as $line) {
+                            $line = trim($line);
+                            if (!$line) {
+                                continue;
+                            }
+
+                            $lineItems = explode(' ', $line);
+                            $key = array_shift($inlineList);
+                            $label = implode(' ', $lineItems);
+
+                            if ($key) {
+                                $name = $key;
+                                $name = str_replace('-', '_', $name);
+                                $name = preg_replace('[^\w\d_]', '', $name);
+                                if (is_numeric(substr($name, 0, 1))) {
+                                    $name = 'A' . $name;
+                                }
+
+                                $meta[] = [
+                                    'name' => $name,
+                                    'value' => $key,
+                                    'label' => $label,
+                                    'cssClass' => '',
+                                    'customColumns' => '',
+                                ];
+                            }
+                        }
+                    }
+
                     $enumClass->getMetaClass()->setMeta(
                         array_map(function ($item) use ($enumClass) {
                             if (!isset($item['value']) || $item['value'] === '') {
@@ -233,7 +267,7 @@ class GiiController extends Controller
                             return new EnumMetaItem(array_merge($item, [
                                 'metaClass' => $enumClass->getMetaClass(),
                             ]));
-                        }, \Yii::$app->request->post('meta', []))
+                        }, $meta)
                     );
 
                     (new EnumGenerator([
