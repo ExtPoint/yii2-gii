@@ -230,7 +230,7 @@ class GiiController extends Controller
                     // Inline
                     $inlineList = \Yii::$app->request->post('inlineList');
                     if ($inlineList) {
-                        foreach (explode('\n', $inlineList) as $line) {
+                        foreach (explode("\n", $inlineList) as $line) {
                             $line = trim($line);
                             if (!$line) {
                                 continue;
